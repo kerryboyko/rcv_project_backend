@@ -32,7 +32,7 @@ export const checkRole = (role: string) => (
   res: Response,
   next: NextFunction
 ) => {
-  const assignedRoles = req.user['http://localhost:3000/roles'];
+  const assignedRoles = req.user['http://localhost:4000/roles'];
   if (Array.isArray(assignedRoles) && assignedRoles.includes(role)) {
     return next();
   }
