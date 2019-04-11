@@ -1,8 +1,8 @@
 import { range } from 'lodash';
-import VoteTallier, { TallyType } from './VoteTallier';
+import VoteTallier, { TallyType, VoteRecord } from './VoteTallier';
 import Ballot from './Ballot';
 
-const genVotes = () => {
+const genVotes = (): VoteRecord => {
   const votes: string[][] = [];
   range(40).forEach(() => {
     votes.push(['a', 'b', 'c']);
@@ -22,7 +22,7 @@ const genVotes = () => {
   return votes;
 };
 
-const sample = genVotes();
+const sample: VoteRecord = genVotes();
 const data: any = {};
 
 describe('genVotes', () => {
@@ -38,11 +38,12 @@ describe('class VoteTallier', () => {
   describe('VoteTallier.constructor()', () => {
     it('constructs a basic instant runoff vote', () => {
       data.test1 = new VoteTallier({ votes: sample });
+      const results1 = data.test1.debug();
       expect(
-        data.test1.ballots.map((ballot: Ballot): string[] => ballot.candidates)
+        results1.ballots.map((ballot: Ballot): string[] => ballot.candidates)
       ).toEqual(sample);
-      expect(data.test1.seats).toEqual(1);
-      expect(data.test1.quota).toEqual(111);
+      expect(results1.seats).toEqual(1);
+      expect(results1.quota).toEqual(111);
     });
     it('constructs a multiseat vote', () => {
       data.test2 = new VoteTallier({
@@ -50,24 +51,52 @@ describe('class VoteTallier', () => {
         tallyType: TallyType.MultiSeat,
         seats: 3,
       });
+      const results2 = data.test2.debug();
       expect(
-        data.test2.ballots.map((ballot: Ballot): string[] => ballot.candidates)
+        results2.ballots.map((ballot: Ballot): string[] => ballot.candidates)
       ).toEqual(sample);
-      expect(data.test2.seats).toEqual(3);
-      expect(data.test2.quota).toEqual(56);
+      expect(results2.seats).toEqual(3);
+      expect(results2.quota).toEqual(56);
     });
   });
-  describe('VoteTallier.getRound()', () => {
-    it('correctly tallies one round of votes', () => {
-      const round1 = data.test1.getRound();
-      expect(round1).toEqual({
+  describe('VoteTallier.getInitialReport', () => {
+    it('calculates the value of a round', () => {
+      const round = data.test1.getInitialReport();
+      data.expected = {
         round: 1,
         results: {
           a: 82,
           b: 44,
           c: 94,
         },
-      });
+      };
+      expect(data.test1.q)
+      expect(round).toEqual(data.expected);
+    });
+  });
+  describe('VoteTallier.tallyVotes()', () => {
+    it('correctly tallies Instant Runoff', () => {
+      data.test1.tallyVotes();
+      const { reports } = data.test1.debug();
+      expect(reports).toEqual([
+        {
+          round: 1,
+          results: { a: 82, b: 44, c: 94 },
+          eliminated: {
+            candidate: 'b',
+            votesTransferred: 44,
+            round: 1,
+            seats: 0,
+          },
+        },
+        {
+          round: 2,
+          results: { a: 126, c: 94 },
+          elected: { candidate: 'a', round: 2, seats: 1, votesTransferred: 15 },
+        },
+        { round: 3,
+        results: {c: 108.99999999999996}}
+      ]);
     });
   });
 });

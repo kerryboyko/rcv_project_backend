@@ -1,16 +1,15 @@
 export default class Ballot {
-  public weight: number = 1.0;
+  private weight: number = 1.0;
 
   constructor(public candidates: string[]) {}
 
-  public reallocateSurplus = (
-    winningCandidate: string,
-    surplusPercentage: number
-  ) => {
-    if (this.candidates[0] === winningCandidate) {
+  public getWeight = (): number => this.weight; 
+  
+  public assignElected = (winner: string, surplusPercentage: number) => {
+    if (this.candidates[0] === winner) {
       this.weight = this.weight * surplusPercentage;
     }
-    this.eliminateCandidate(winningCandidate);
+    this.eliminateCandidate(winner);
   };
 
   public eliminateCandidate = (eliminatedCandidate: string) => {
@@ -18,4 +17,6 @@ export default class Ballot {
       (candidate: string) => candidate !== eliminatedCandidate
     );
   };
+
+  public readBallot = () => ({ weight: this.weight, candidates: this.candidates });
 }
