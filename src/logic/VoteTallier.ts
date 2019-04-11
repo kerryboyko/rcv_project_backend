@@ -44,6 +44,9 @@ export default class VoteTallier {
     if (data.seats) {
       this.seats = data.seats;
     }
+    if (data.tallyType) {
+      this.tallyType = data.tallyType;
+    }
     this.quota = Math.floor(this.ballots.length / (this.seats + 1)) + 1;
   }
 
@@ -63,8 +66,9 @@ export default class VoteTallier {
   private tallyVotes = (): void => {
     const initialReport: IVotingRoundReport = this.getInitialReport();
     const voteValues = Object.values(initialReport.results);
+    const voteTotal = voteValues.reduce((pv, cv) => pv + cv, 0);
     // if we don't have enough votes to fill another seat, end;
-    if (voteValues.reduce((pv, cv) => pv + cv) < this.quota) {
+    if (voteTotal < this.quota) {
       return this.finalReport(initialReport);
     } else if (voteValues.some((res: number) => res >= this.quota)) {
       this.assignSeat(initialReport);
@@ -73,11 +77,16 @@ export default class VoteTallier {
     }
     return this.tallyVotes();
   };
+
   private finalReport = (initialReport: IVotingRoundReport): void => {
     this.reports.push({ round: this.round, results: initialReport.results });
   };
+
   private getInitialReport = (): IVotingRoundReport => {
     // get this round's ballot in the form of a report
+    this.ballots = this.ballots.filter(
+      (ballot: Ballot) => ballot.candidates.length > 0
+    );
     return this.ballots.reduce(
       (runningCount: IVotingRoundReport, currentBallot: Ballot) => {
         const candidate: string = currentBallot.candidates[0]; // this round's choice
@@ -108,6 +117,7 @@ export default class VoteTallier {
         ? Math.floor(winnerCount / this.quota)
         : 1;
 
+
     const elected: IElectedSeat = {
       candidate: winner,
       round: this.round,
@@ -124,7 +134,9 @@ export default class VoteTallier {
     this.round += 1; // increment the round;
   };
 
-  private eliminateLastCandidate = (initialReport: IVotingRoundReport) => {
+  private eliminateLastCandidate = (
+    initialReport: IVotingRoundReport
+  ): void => {
     const { results } = initialReport;
     const report = { ...initialReport };
     // find the candidates with the least votes;
