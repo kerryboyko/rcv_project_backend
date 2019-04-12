@@ -62,14 +62,43 @@ export default class VoteTallier {
     };
   };
 
+  // in the rare scenario where no candidate can pass the quota but there
+  // are seats remaining, assign the seats to the top candidate remaining.
+  private assignSeatsByDefault = (initialReport: IVotingRoundReport) => {
+    const { results } = initialReport;
+    const report: IVotingRoundReport = { ...initialReport };
+    const winner = Object.entries(results).reduce(
+      ([prevCand, prevCount]: VoteTuple, [cand, count]: VoteTuple) => {
+        return count > prevCount ? [cand, count] : [prevCand, prevCount];
+      }
+    )[0];
+    const elected: IElectedSeat = {
+      candidate: winner,
+      round: this.round,
+      seats: 1,
+      votesTransferred: 0,
+    };
+    const ZERO_PERCENT = 0.0;
+    // we do not transfer votes in this scenario, so set the weight of all ballots of the winner to 0;
+    // assigning it normally would result in a negative number.
+    this.ballots.forEach(ballot => ballot.assignElected(winner, ZERO_PERCENT));
+    report.elected = elected;
+    this.reports.push(report);
+    this.round += 1; // increment the round;
+    this.seats += -1; // decrement the number of available seats; Do not change the quota;
+  };
+
   // recursive
   private tallyVotes = (): void => {
     const initialReport: IVotingRoundReport = this.getInitialReport();
-    const voteValues = Object.values(initialReport.results);
-    const voteTotal = voteValues.reduce((pv, cv) => pv + cv, 0);
-    // if we don't have enough votes to fill another seat, end;
-    if (voteTotal < this.quota) {
+    if (this.seats <= 0 || Object.keys(initialReport.results).length === 0) {
+      // if we've already assigned all the seats,
       return this.finalReport(initialReport);
+    }
+    const voteValues = Object.values(initialReport.results);
+    // if we have an equal number of seats and candidates
+    if (voteValues.length === this.seats) {
+      this.assignSeatsByDefault(initialReport);
     } else if (voteValues.some((res: number) => res >= this.quota)) {
       this.assignSeat(initialReport);
     } else {
@@ -117,7 +146,6 @@ export default class VoteTallier {
         ? Math.floor(winnerCount / this.quota)
         : 1;
 
-
     const elected: IElectedSeat = {
       candidate: winner,
       round: this.round,
@@ -132,6 +160,7 @@ export default class VoteTallier {
     report.elected = elected;
     this.reports.push(report);
     this.round += 1; // increment the round;
+    this.seats += -1; // decrement the number of available seats; Do not change the quota;
   };
 
   private eliminateLastCandidate = (

@@ -201,86 +201,56 @@ describe('class VoteTallier', () => {
       const { reports } = data.bigIRV.debug();
       expect(reports).toEqual([
         {
-          round: 1,
-          results: {
-            a: 1640,
-            b: 1320,
-            c: 2820,
-            d: 1640,
-            e: 440,
-            f: 940,
-          },
           eliminated: {
             candidate: 'e',
-            votesTransferred: 440,
             round: 1,
             seats: 0,
+            votesTransferred: 440,
           },
+          results: { a: 1640, b: 1320, c: 2820, d: 1640, e: 440, f: 940 },
+          round: 1,
         },
         {
-          round: 2,
-          results: {
-            a: 1640,
-            b: 1320,
-            c: 2820,
-            d: 2080,
-            f: 940,
-          },
           eliminated: {
             candidate: 'f',
-            votesTransferred: 940,
             round: 2,
             seats: 0,
+            votesTransferred: 940,
           },
+          results: { a: 1640, b: 1320, c: 2820, d: 2080, f: 940 },
+          round: 2,
         },
         {
-          round: 3,
-          results: {
-            a: 2100,
-            b: 1800,
-            c: 2820,
-            d: 2080,
-          },
           eliminated: {
             candidate: 'b',
-            votesTransferred: 1800,
             round: 3,
             seats: 0,
+            votesTransferred: 1800,
           },
+          results: { a: 2100, b: 1800, c: 2820, d: 2080 },
+          round: 3,
         },
         {
-          round: 4,
-          results: {
-            a: 3460,
-            c: 2820,
-            d: 2520,
-          },
           eliminated: {
             candidate: 'd',
-            votesTransferred: 2520,
             round: 4,
             seats: 0,
+            votesTransferred: 2520,
           },
+          results: { a: 3460, c: 2820, d: 2520 },
+          round: 4,
         },
         {
-          round: 5,
-          results: {
-            a: 3460,
-            c: 5340,
-          },
           elected: {
             candidate: 'c',
             round: 5,
             seats: 1,
             votesTransferred: 939,
           },
+          results: { a: 3460, c: 5340 },
+          round: 5,
         },
-        {
-          round: 6,
-          results: {
-            a: 3625.292134831411,
-          },
-        },
+        { results: { a: 3625.292134831411 }, round: 6 },
       ]);
     });
     it('works for STV', () => {
@@ -371,7 +341,7 @@ describe('class VoteTallier', () => {
             candidate: 'a',
             round: 6,
             seats: 1,
-            votesTransferred: 1465.3333333333458,
+            votesTransferred: 0,
           },
         },
         {
@@ -381,15 +351,16 @@ describe('class VoteTallier', () => {
       ]);
     });
     it('works for a Primary', () => {
+      const initialSeats = data.bigPrimary.debug().seats;
       data.bigPrimary.tallyVotes();
-      const { reports, seats } = data.bigPrimary.debug();
-      const totalDelegatesAssigned = reports.reduce((pv:number, cv:any) => {
-        if(cv.elected){
+      const { reports } = data.bigPrimary.debug();
+      const totalDelegatesAssigned = reports.reduce((pv: number, cv: any) => {
+        if (cv.elected) {
           return pv + cv.elected.seats;
         }
         return pv;
-      }, 0)
-      expect(totalDelegatesAssigned).toBe(seats); // sanity check.
+      }, 0);
+      expect(totalDelegatesAssigned).toBe(initialSeats); // sanity check.
       expect(reports).toEqual([
         {
           round: 1,
