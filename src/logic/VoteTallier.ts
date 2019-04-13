@@ -6,11 +6,18 @@ export enum TallyType {
   DemocraticPrimary = 'Assignment of delegates in the Democratic Primary',
 }
 
+export enum CandidateAction {
+  elected = 'ELECTED - MET QUOTA',
+  assigned = 'ELECTED - OTHER CANDIDATES ELIMINATED',
+  eliminated = 'ELIMINATED - FEWEST VOTES',
+}
+
 export type VoteRecord = string[][];
 type VoteTuple = [string, number];
 
 interface IElectedSeat {
   candidate: string;
+  action: CandidateAction;
   seats: number;
   round: number;
   votesTransferred: number;
@@ -21,8 +28,7 @@ interface IVotingRoundReport {
   results: {
     [key: string]: number;
   };
-  eliminated?: IElectedSeat;
-  elected?: IElectedSeat;
+  outcome?: IElectedSeat;
 }
 
 interface IVoteTallier {
@@ -62,38 +68,12 @@ export default class VoteTallier {
     };
   };
 
-  // in the rare scenario where no candidate can pass the quota but there
-  // are seats remaining, assign the seats to the top candidate remaining.
-  private assignSeatsByDefault = (initialReport: IVotingRoundReport) => {
-    const { results } = initialReport;
-    const report: IVotingRoundReport = { ...initialReport };
-    const winner = Object.entries(results).reduce(
-      ([prevCand, prevCount]: VoteTuple, [cand, count]: VoteTuple) => {
-        return count > prevCount ? [cand, count] : [prevCand, prevCount];
-      }
-    )[0];
-    const elected: IElectedSeat = {
-      candidate: winner,
-      round: this.round,
-      seats: 1,
-      votesTransferred: 0,
-    };
-    const ZERO_PERCENT = 0.0;
-    // we do not transfer votes in this scenario, so set the weight of all ballots of the winner to 0;
-    // assigning it normally would result in a negative number.
-    this.ballots.forEach(ballot => ballot.assignElected(winner, ZERO_PERCENT));
-    report.elected = elected;
-    this.reports.push(report);
-    this.round += 1; // increment the round;
-    this.seats += -1; // decrement the number of available seats; Do not change the quota;
-  };
-
   // recursive
   private tallyVotes = (): void => {
     const initialReport: IVotingRoundReport = this.getInitialReport();
     if (this.seats <= 0 || Object.keys(initialReport.results).length === 0) {
       // if we've already assigned all the seats,
-      return this.finalReport(initialReport);
+      return this.finalReport(initialReport); // returns void.
     }
     const voteValues = Object.values(initialReport.results);
     // if we have an equal number of seats and candidates
@@ -104,7 +84,7 @@ export default class VoteTallier {
     } else {
       this.eliminateLastCandidate(initialReport);
     }
-    return this.tallyVotes();
+    this.tallyVotes(); // call recursively, do not return to save callstack.
   };
 
   private finalReport = (initialReport: IVotingRoundReport): void => {
@@ -148,6 +128,7 @@ export default class VoteTallier {
 
     const elected: IElectedSeat = {
       candidate: winner,
+      action: CandidateAction.elected,
       round: this.round,
       seats: seatsAssigned,
       votesTransferred: winnerCount - seatsAssigned * this.quota,
@@ -157,7 +138,34 @@ export default class VoteTallier {
     this.ballots.forEach(ballot =>
       ballot.assignElected(winner, surplusPercentage)
     );
-    report.elected = elected;
+    report.outcome = elected;
+    this.reports.push(report);
+    this.round += 1; // increment the round;
+    this.seats += -1; // decrement the number of available seats; Do not change the quota;
+  };
+
+  // in the rare scenario where no candidate can pass the quota but there
+  // are seats remaining, assign the first seat to the top candidate remaining.
+  private assignSeatsByDefault = (initialReport: IVotingRoundReport) => {
+    const { results } = initialReport;
+    const report: IVotingRoundReport = { ...initialReport };
+    const winner = Object.entries(results).reduce(
+      ([prevCand, prevCount]: VoteTuple, [cand, count]: VoteTuple) => {
+        return count > prevCount ? [cand, count] : [prevCand, prevCount];
+      }
+    )[0];
+    const defaultElected: IElectedSeat = {
+      candidate: winner,
+      action: CandidateAction.assigned,
+      round: this.round,
+      seats: 1,
+      votesTransferred: 0,
+    };
+    const ZERO_PERCENT = 0.0;
+    // we do not transfer votes in this scenario, so set the weight of all ballots of the winner to 0;
+    // assigning it normally would result in a negative number.
+    this.ballots.forEach(ballot => ballot.assignElected(winner, ZERO_PERCENT));
+    report.outcome = defaultElected;
     this.reports.push(report);
     this.round += 1; // increment the round;
     this.seats += -1; // decrement the number of available seats; Do not change the quota;
@@ -176,11 +184,12 @@ export default class VoteTallier {
     );
     const lost: IElectedSeat = {
       candidate: loser,
+      action: CandidateAction.eliminated,
       votesTransferred: loserVotes,
       round: this.round,
       seats: 0,
     };
-    report.eliminated = lost;
+    report.outcome = lost;
     this.reports.push(report);
     this.ballots.forEach(ballot => ballot.eliminateCandidate(loser));
     this.round += 1;

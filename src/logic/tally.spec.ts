@@ -1,5 +1,9 @@
 import { range } from 'lodash';
-import VoteTallier, { TallyType, VoteRecord } from './VoteTallier';
+import VoteTallier, {
+  TallyType,
+  VoteRecord,
+  CandidateAction,
+} from './VoteTallier';
 import Ballot from './Ballot';
 
 const genVotes = (): VoteRecord => {
@@ -146,8 +150,9 @@ describe('class VoteTallier', () => {
         {
           round: 1,
           results: { a: 82, b: 44, c: 94 },
-          eliminated: {
+          outcome: {
             candidate: 'b',
+            action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 44,
             round: 1,
             seats: 0,
@@ -156,7 +161,13 @@ describe('class VoteTallier', () => {
         {
           round: 2,
           results: { a: 126, c: 94 },
-          elected: { candidate: 'a', round: 2, seats: 1, votesTransferred: 15 },
+          outcome: {
+            candidate: 'a',
+            action: 'ELECTED - MET QUOTA',
+            round: 2,
+            seats: 1,
+            votesTransferred: 15,
+          },
         },
         { round: 3, results: { c: 108.99999999999996 } },
       ]);
@@ -164,17 +175,25 @@ describe('class VoteTallier', () => {
     it('correctly tallies STV', async () => {
       data.test2.tallyVotes();
       const { reports } = data.test2.debug();
+
       expect(reports).toEqual([
         {
           round: 1,
           results: { a: 82, b: 44, c: 94 },
-          elected: { candidate: 'c', round: 1, seats: 1, votesTransferred: 20 },
+          outcome: {
+            candidate: 'c',
+            action: 'ELECTED - MET QUOTA',
+            round: 1,
+            seats: 1,
+            votesTransferred: 20,
+          },
         },
         {
           round: 2,
           results: { a: 91.78723404255305, b: 54.21276595744666 },
-          elected: {
+          outcome: {
             candidate: 'a',
+            action: 'ELECTED - MET QUOTA',
             round: 2,
             seats: 1,
             votesTransferred: 17.787234042553052,
@@ -199,76 +218,77 @@ describe('class VoteTallier', () => {
     it('works for IRV', async () => {
       data.bigIRV.tallyVotes();
       const { reports } = data.bigIRV.debug();
+
       expect(reports).toEqual([
         {
-          eliminated: {
+          round: 1,
+          results: { a: 1640, b: 1320, c: 2820, d: 1640, e: 440, f: 940 },
+          outcome: {
             candidate: 'e',
+            action: 'ELIMINATED - FEWEST VOTES',
+            votesTransferred: 440,
             round: 1,
             seats: 0,
-            votesTransferred: 440,
           },
-          results: { a: 1640, b: 1320, c: 2820, d: 1640, e: 440, f: 940 },
-          round: 1,
         },
         {
-          eliminated: {
+          round: 2,
+          results: { a: 1640, b: 1320, c: 2820, d: 2080, f: 940 },
+          outcome: {
             candidate: 'f',
+            action: 'ELIMINATED - FEWEST VOTES',
+            votesTransferred: 940,
             round: 2,
             seats: 0,
-            votesTransferred: 940,
           },
-          results: { a: 1640, b: 1320, c: 2820, d: 2080, f: 940 },
-          round: 2,
         },
         {
-          eliminated: {
+          round: 3,
+          results: { a: 2100, b: 1800, c: 2820, d: 2080 },
+          outcome: {
             candidate: 'b',
+            action: 'ELIMINATED - FEWEST VOTES',
+            votesTransferred: 1800,
             round: 3,
             seats: 0,
-            votesTransferred: 1800,
           },
-          results: { a: 2100, b: 1800, c: 2820, d: 2080 },
-          round: 3,
         },
         {
-          eliminated: {
+          round: 4,
+          results: { a: 3460, c: 2820, d: 2520 },
+          outcome: {
             candidate: 'd',
+            action: 'ELIMINATED - FEWEST VOTES',
+            votesTransferred: 2520,
             round: 4,
             seats: 0,
-            votesTransferred: 2520,
           },
-          results: { a: 3460, c: 2820, d: 2520 },
-          round: 4,
         },
         {
-          elected: {
+          round: 5,
+          results: { a: 3460, c: 5340 },
+          outcome: {
             candidate: 'c',
+            action: 'ELECTED - MET QUOTA',
             round: 5,
             seats: 1,
             votesTransferred: 939,
           },
-          results: { a: 3460, c: 5340 },
-          round: 5,
         },
-        { results: { a: 3625.292134831411 }, round: 6 },
+        { round: 6, results: { a: 3625.292134831411 } },
       ]);
     });
     it('works for STV', () => {
       data.bigSTV.tallyVotes();
       const { reports } = data.bigSTV.debug();
+
       expect(reports).toEqual([
         {
           round: 1,
-          results: {
-            a: 1640,
-            b: 1320,
-            c: 2820,
-            d: 1640,
-            e: 440,
-            f: 940,
-          },
-          elected: {
+          results: { a: 1640, b: 1320, c: 2820, d: 1640, e: 440, f: 940 },
+          outcome: {
             candidate: 'c',
+            action: 'ELECTED - MET QUOTA',
             round: 1,
             seats: 1,
             votesTransferred: 619,
@@ -283,8 +303,9 @@ describe('class VoteTallier', () => {
             e: 545.3617021276659,
             f: 940,
           },
-          eliminated: {
+          outcome: {
             candidate: 'e',
+            action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 545.3617021276659,
             round: 2,
             seats: 0,
@@ -298,8 +319,9 @@ describe('class VoteTallier', () => {
             d: 2387.304964538812,
             f: 940,
           },
-          elected: {
+          outcome: {
             candidate: 'd',
+            action: 'ELECTED - MET QUOTA',
             round: 3,
             seats: 1,
             votesTransferred: 186.30496453881187,
@@ -307,13 +329,10 @@ describe('class VoteTallier', () => {
         },
         {
           round: 4,
-          results: {
-            a: 1740.9716312056798,
-            b: 1602.595908875287,
-            f: 940,
-          },
-          eliminated: {
+          results: { a: 1740.9716312056798, b: 1602.595908875287, f: 940 },
+          outcome: {
             candidate: 'f',
+            action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 940,
             round: 4,
             seats: 0,
@@ -321,12 +340,10 @@ describe('class VoteTallier', () => {
         },
         {
           round: 5,
-          results: {
-            a: 2200.97163120568,
-            b: 2082.595908875287,
-          },
-          eliminated: {
+          results: { a: 2200.97163120568, b: 2082.595908875287 },
+          outcome: {
             candidate: 'b',
+            action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 2082.595908875287,
             round: 5,
             seats: 0,
@@ -334,20 +351,16 @@ describe('class VoteTallier', () => {
         },
         {
           round: 6,
-          results: {
-            a: 3666.3333333333458,
-          },
-          elected: {
+          results: { a: 3666.3333333333458 },
+          outcome: {
             candidate: 'a',
+            action: 'ELECTED - OTHER CANDIDATES ELIMINATED',
             round: 6,
             seats: 1,
             votesTransferred: 0,
           },
         },
-        {
-          round: 7,
-          results: {},
-        },
+        { round: 7, results: {} },
       ]);
     });
     it('works for a Primary', () => {
@@ -355,25 +368,26 @@ describe('class VoteTallier', () => {
       data.bigPrimary.tallyVotes();
       const { reports } = data.bigPrimary.debug();
       const totalDelegatesAssigned = reports.reduce((pv: number, cv: any) => {
-        if (cv.elected) {
-          return pv + cv.elected.seats;
+        if (!cv.outcome || cv.outcome.action === CandidateAction.eliminated) {
+          return pv;
+        }
+        if (
+          cv.outcome.action === CandidateAction.elected ||
+          cv.outcome.action === CandidateAction.assigned
+        ) {
+          return pv + cv.outcome.seats;
         }
         return pv;
       }, 0);
       expect(totalDelegatesAssigned).toBe(initialSeats); // sanity check.
+
       expect(reports).toEqual([
         {
           round: 1,
-          results: {
-            a: 1640,
-            b: 1320,
-            c: 2820,
-            d: 1640,
-            e: 440,
-            f: 940,
-          },
-          elected: {
+          results: { a: 1640, b: 1320, c: 2820, d: 1640, e: 440, f: 940 },
+          outcome: {
             candidate: 'c',
+            action: 'ELECTED - MET QUOTA',
             round: 1,
             seats: 7,
             votesTransferred: 349,
@@ -388,8 +402,9 @@ describe('class VoteTallier', () => {
             e: 499.40425531915935,
             f: 940,
           },
-          elected: {
+          outcome: {
             candidate: 'd',
+            action: 'ELECTED - MET QUOTA',
             round: 2,
             seats: 4,
             votesTransferred: 341.85815602833645,
@@ -403,8 +418,9 @@ describe('class VoteTallier', () => {
             e: 670.3333333333111,
             f: 940,
           },
-          elected: {
+          outcome: {
             candidate: 'a',
+            action: 'ELECTED - MET QUOTA',
             round: 3,
             seats: 4,
             votesTransferred: 284.9290780141682,
@@ -417,8 +433,9 @@ describe('class VoteTallier', () => {
             e: 737.4967950727031,
             f: 1010.5216348263618,
           },
-          elected: {
+          outcome: {
             candidate: 'b',
+            action: 'ELECTED - MET QUOTA',
             round: 4,
             seats: 4,
             votesTransferred: 344.98157010090904,
@@ -426,12 +443,10 @@ describe('class VoteTallier', () => {
         },
         {
           round: 5,
-          results: {
-            e: 737.4967950727031,
-            f: 1096.9151937728473,
-          },
-          elected: {
+          results: { e: 737.4967950727031, f: 1096.9151937728473 },
+          outcome: {
             candidate: 'f',
+            action: 'ELECTED - MET QUOTA',
             round: 5,
             seats: 3,
             votesTransferred: 37.91519377284726,
@@ -439,20 +454,16 @@ describe('class VoteTallier', () => {
         },
         {
           round: 6,
-          results: {
-            e: 737.4967950727031,
-          },
-          elected: {
+          results: { e: 737.4967950727031 },
+          outcome: {
             candidate: 'e',
+            action: 'ELECTED - MET QUOTA',
             round: 6,
             seats: 2,
             votesTransferred: 31.496795072703094,
           },
         },
-        {
-          round: 7,
-          results: {},
-        },
+        { round: 7, results: {} },
       ]);
     });
   });
