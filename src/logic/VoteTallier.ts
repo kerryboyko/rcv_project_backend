@@ -1,45 +1,19 @@
 import Ballot from './Ballot';
+import {
+  CandidateAction,
+  ElectionType,
+  IElectedSeat,
+  IVoteTallier,
+  IVotingRoundReport,
+  VoteTuple,
+} from '../types';
 
-export enum TallyType {
-  InstantRunoff = 'Instant Runoff Election with One Winner',
-  MultiSeat = 'Multi-Seat Election with Single Transferable Votes',
-  DemocraticPrimary = 'Assignment of delegates in the Democratic Primary',
-}
-
-export enum CandidateAction {
-  elected = 'ELECTED - MET QUOTA',
-  assigned = 'ELECTED - OTHER CANDIDATES ELIMINATED',
-  eliminated = 'ELIMINATED - FEWEST VOTES',
-}
-
-export type VoteRecord = string[][];
-type VoteTuple = [string, number];
-
-interface IElectedSeat {
-  candidate: string;
-  action: CandidateAction;
-  seats: number;
-  round: number;
-  votesTransferred: number;
-}
-
-interface IVotingRoundReport {
-  round: number;
-  results: {
-    [key: string]: number;
-  };
-  outcome?: IElectedSeat;
-}
-
-interface IVoteTallier {
-  votes: VoteRecord;
-  tallyType?: TallyType;
-  seats?: number; // number of seats up for grabs OR number of total delegates;
-}
+// seems obvious, but best practice is to avoid "magic numbers";
+const ZERO_PERCENT = 0.0;
 
 export default class VoteTallier {
   private ballots: Ballot[];
-  private tallyType: TallyType = TallyType.InstantRunoff;
+  private electionType: ElectionType = ElectionType.InstantRunoff;
   private seats: number = 1;
   private quota: number = 0;
   private round: number = 1;
@@ -50,17 +24,17 @@ export default class VoteTallier {
     if (data.seats) {
       this.seats = data.seats;
     }
-    if (data.tallyType) {
-      this.tallyType = data.tallyType;
+    if (data.electionType) {
+      this.electionType = data.electionType;
     }
     this.quota = Math.floor(this.ballots.length / (this.seats + 1)) + 1;
   }
 
   public debug = () => {
-    const { ballots, tallyType, seats, quota, round, reports } = this;
+    const { ballots, electionType, seats, quota, round, reports } = this;
     return {
       ballots,
-      tallyType,
+      electionType,
       seats,
       quota,
       round,
@@ -122,7 +96,7 @@ export default class VoteTallier {
     // we can assign multiple seats to the same candidate in a Dem Primary,
     // otherwise the max is 1.
     const seatsAssigned: number =
-      this.tallyType === TallyType.DemocraticPrimary
+      this.electionType === ElectionType.DemocraticPrimary
         ? Math.floor(winnerCount / this.quota)
         : 1;
 
@@ -161,7 +135,6 @@ export default class VoteTallier {
       seats: 1,
       votesTransferred: 0,
     };
-    const ZERO_PERCENT = 0.0;
     // we do not transfer votes in this scenario, so set the weight of all ballots of the winner to 0;
     // assigning it normally would result in a negative number.
     this.ballots.forEach(ballot => ballot.assignElected(winner, ZERO_PERCENT));
