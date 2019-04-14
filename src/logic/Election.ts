@@ -41,8 +41,9 @@ export default class Election implements IElection {
       }
     );
     this.pollsOpen = moment(initialSettings.pollsOpen) || moment();
-    this.pollsClose =
-      moment(initialSettings.pollsClose) || moment().add({ hours: 24 });
+    this.pollsClose = initialSettings.pollsClose
+      ? moment(initialSettings.pollsClose)
+      : moment().add({ hours: 24 });
 
     this.saveElection();
   }

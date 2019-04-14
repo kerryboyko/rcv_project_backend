@@ -8,7 +8,7 @@ const connect = (
 ): Promise<{ db: Db; dbClose: () => void }> =>
   new Promise((resolve, reject) => {
     const client = new MongoClient(
-      config.MONGO_URL || 'mongodb://localhost:27017'
+      config.MONGO_URL || 'mongodb://localhost:27017', {useNewUrlParser: true}
     );
     client.connect((err: any) => {
       if (err) {

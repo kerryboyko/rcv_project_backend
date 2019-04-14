@@ -20,7 +20,7 @@ export const dbLoadElection = async (electionID: string) => {
     return result;
   } catch (err) {
     dbClose();
-    throw new Error(err);
+    return Promise.reject(err);
   }
 };
 
@@ -31,7 +31,6 @@ export const dbSaveElection = async (election: Election) => {
     ...pick(election, [
       'title',
       'subtitle',
-      'reports',
       'electionStatus',
       'resultsVisibility',
       'electionType',
@@ -40,8 +39,6 @@ export const dbSaveElection = async (election: Election) => {
     pollsOpen: moment(election.pollsOpen).toISOString(),
     pollsClose: moment(election.pollsClose).toISOString(),
     // to preserve secrecy, we should store the votes, and who has voted, but not together.
-    voterIds: [],
-    votes: [],
   };
   const electionID = new ObjectID(election.electionID);
   try {
@@ -55,7 +52,7 @@ export const dbSaveElection = async (election: Election) => {
     return result;
   } catch (err) {
     dbClose();
-    throw new Error(err);
+    return Promise.reject(err);
   }
 };
 
@@ -68,20 +65,22 @@ export const dbCastVote = async (
   const dbID = new ObjectID(electionID);
   try {
     // check if election exists and is unique
-    const electionExists = await dbElections.count({
+    const electionExists = await dbElections.findOne({
       _id: dbID,
     });
-    if (electionExists !== 1) {
+    if (!electionExists) {
       dbClose();
-      if (electionExists < 1) {
-        throw new Error(
-          `Election with electionID: ${electionID} does not exist`
-        );
-      } else {
-        throw new Error(
-          `SERIOUS ERROR: ${electionExists} elections exist with the same ID: ${electionID}`
-        );
-      }
+      return Promise.reject(
+        `Election with electionID: ${electionID} does not exist`
+      );
+    }
+    if (moment().isAfter(moment(electionExists.pollsClose))) {
+      dbClose();
+      return Promise.reject(
+        `Your vote was not recorded, because polls have closed for election ${
+          electionExists.electionID
+        } at ${electionExists.pollsClose},`
+      );
     }
 
     // check if user has not yet voted
@@ -89,14 +88,19 @@ export const dbCastVote = async (
       { _id: dbID },
       { projection: { voterIds: true } }
     );
-    if (voterRecord.voterId.includes(voterId)) {
+    if (
+      Array.isArray(voterRecord.voterIds) &&
+      voterRecord.voterIds.includes(voterId)
+    ) {
       dbClose();
-      throw new Error(
+      return Promise.reject(
         `Voter: ${voterId} has already cast a ballot in this election`
       );
     }
 
     // save the vote
+    // If the field is absent in the document to update,
+    // $push adds the array field with the value as its element.
     const result = await dbElections.findOneAndUpdate(
       { _id: dbID },
       {
@@ -111,7 +115,7 @@ export const dbCastVote = async (
     return result;
   } catch (err) {
     dbClose();
-    throw new Error(err);
+    return Promise.reject(err);
   }
 };
 
