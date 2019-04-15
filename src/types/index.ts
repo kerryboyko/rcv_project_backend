@@ -55,10 +55,9 @@ export enum ElectionResultsVisibility {
 export interface IElection {
   title: string;
   subtitle?: string;
-  pollsOpen: Moment;
-  pollsClose: Moment;
+  pollsOpen: Moment | string;
+  pollsClose: Moment | string;
   electionID?: string;
-  reports: IVotingRoundReport[];
   resultsVisibility: ElectionResultsVisibility;
   electionStatus: ElectionStatus;
   [key: string]: any;
