@@ -92,6 +92,39 @@ describe('server/api/v1/elections', () => {
         voterId: 'API FIRST',
       });
     });
+    it('casts a 2nd ballot', async () => {
+      const { data }: any = await axios({
+        method: 'patch',
+        url: `http://localhost:4444/api/v1/elections/${cache.id}/vote`,
+        data: {
+          voterId: 'API SECOND',
+          vote: ['LAZERHAWK', 'KAVINSKY', 'STROM'],
+        },
+      }).catch(console.warn);
+      expect(data).toEqual({
+        ...testElection,
+        subtitle: 'updated subtitle',
+        electionID: cache.id,
+        vote: ['LAZERHAWK', 'KAVINSKY', 'STROM'],
+        voterId: 'API SECOND',
+      });
+    });
+    it("won't let anyone vote twice", async () => {
+      const something: any = await axios({
+        method: 'patch',
+        url: `http://localhost:4444/api/v1/elections/${cache.id}/vote`,
+        data: {
+          voterId: 'API SECOND',
+          vote: ['LAZERHAWK', 'KAVINSKY', 'STROM'],
+        },
+      }).catch(err => {
+        cache.catcherr = err.response.data;
+      });
+      expect(something).toBeUndefined();
+      expect(cache.catcherr).toBe(
+        `Voter: API SECOND has already cast a ballot in this election`
+      );
+    });
   });
   afterAll(async () => {
     return cache.server.close();
