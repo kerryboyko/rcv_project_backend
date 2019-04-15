@@ -146,7 +146,9 @@ describe('db/controllers/elections.ts', () => {
         pollsClose: moment()
           .add({ hours: 12 })
           .toISOString(),
-        pollsOpen: moment().add({hours: 6}).toISOString(),
+        pollsOpen: moment()
+          .add({ hours: 6 })
+          .toISOString(),
       });
       const result1 = await dbRetrieveElection(data.testElectionID);
       expect(moment(result1.pollsOpen).isAfter(moment())).toBe(true);

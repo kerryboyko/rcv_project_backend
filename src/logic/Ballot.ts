@@ -3,8 +3,8 @@ export default class Ballot {
 
   constructor(public candidates: string[]) {}
 
-  public getWeight = (): number => this.weight; 
-  
+  public getWeight = (): number => this.weight;
+
   public assignElected = (winner: string, surplusPercentage: number) => {
     if (this.candidates[0] === winner) {
       this.weight = this.weight * surplusPercentage;
@@ -18,5 +18,8 @@ export default class Ballot {
     );
   };
 
-  public readBallot = () => ({ weight: this.weight, candidates: this.candidates });
+  public readBallot = () => ({
+    weight: this.weight,
+    candidates: this.candidates,
+  });
 }

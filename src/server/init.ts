@@ -3,12 +3,12 @@ import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import { checkJwt, checkRole } from './auth';
 
-import userRoutes from './api/v1/user';
+import electionRoutes from './api/v1/election';
 
 const runServer = (port: number) => {
   const app: express.Application = express();
-  app.use(bodyParser.json());
 
+  app.use(bodyParser.json());
   /* PREFLIGHT / CORS */
   app.use((_, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -19,7 +19,6 @@ const runServer = (port: number) => {
     next();
   });
 
-  app.use(bodyParser.json({ type: 'application/*+json' }));
   app.use(morgan('dev'));
   /* PUBLIC ROUTES */
   app.get('/public', (_, res) => {
@@ -43,7 +42,7 @@ const runServer = (port: number) => {
   });
 
   /* API Routes */
-  userRoutes(app);
+  electionRoutes(app);
 
   return app.listen(port);
 };

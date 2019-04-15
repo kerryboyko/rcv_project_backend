@@ -1,0 +1,1 @@
+{"version":3,"file":"Ballot.d.ts","sourceRoot":"","sources":["../../src/logic/Ballot.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,OAAO,OAAO,MAAM;IAGN,UAAU,EAAE,MAAM,EAAE;IAFvC,OAAO,CAAC,MAAM,CAAe;gBAEV,UAAU,EAAE,MAAM,EAAE;IAEhC,SAAS,eAA6B;IAEtC,aAAa,sDAKlB;IAEK,kBAAkB,wCAIvB;IAEK,UAAU;;;MAAgE;CAClF"}
