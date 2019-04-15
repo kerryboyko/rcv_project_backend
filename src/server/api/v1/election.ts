@@ -4,6 +4,7 @@ import {
   dbCreateElection,
   dbRetrieveElection,
   dbCastVote,
+  dbUpdateElection,
 } from '../../../db/controllers/elections';
 import pick from 'lodash/pick';
 
@@ -32,7 +33,21 @@ const electionRoutes = (app: Application) => {
     }
   );
 
-  app.post(
+  app.patch(
+    '/api/v1/elections/:electionID',
+    async (req: Request, res: Response) => {
+      const update: any = req.body;
+      try {
+        await dbUpdateElection(req.params.electionID, update);
+        const election = await dbRetrieveElection(req.params.electionID);
+        res.status(200).send({ ...election });
+      } catch (err) {
+        res.status(500).send(err);
+      }
+    }
+  );
+
+  app.patch(
     '/api/v1/elections/:electionID/vote',
     async (req: Request, res: Response) => {
       const { voterId, vote } = req.body;

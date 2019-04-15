@@ -56,10 +56,28 @@ describe('server/api/v1/elections', () => {
       });
     });
   });
-  describe('POST http://localhost:4444/api/v1/elections/:electionID/vote', () => {
+  describe('PATCH http://localhost:4444/api/v1/elections/:electionID', () => {
+    it("alter's an election's data", async () => {
+      const { data }: any = await axios({
+        method: 'patch',
+        url: `http://localhost:4444/api/v1/elections/${cache.id}`,
+        data: {
+          subtitle: 'updated subtitle',
+        },
+      }).catch(console.warn);
+      expect(data).toEqual({
+        ...testElection,
+        subtitle: 'updated subtitle',
+        votes: [],
+        voterIds: [],
+        _id: cache.id,
+      });
+    });
+  });
+  describe('PATCH http://localhost:4444/api/v1/elections/:electionID/vote', () => {
     it('casts a ballot', async () => {
       const { data }: any = await axios({
-        method: 'post',
+        method: 'patch',
         url: `http://localhost:4444/api/v1/elections/${cache.id}/vote`,
         data: {
           voterId: 'API FIRST',
@@ -68,6 +86,7 @@ describe('server/api/v1/elections', () => {
       }).catch(console.warn);
       expect(data).toEqual({
         ...testElection,
+        subtitle: 'updated subtitle',
         electionID: cache.id,
         vote: ['LAZERHAWK', 'PURTURBATOR', 'KAVINSKY'],
         voterId: 'API FIRST',
