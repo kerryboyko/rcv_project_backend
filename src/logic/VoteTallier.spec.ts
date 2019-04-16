@@ -6,19 +6,19 @@ import Ballot from './Ballot';
 const genVotes = (): VoteRecord => {
   const votes: string[][] = [];
   range(40).forEach(() => {
-    votes.push(['a', 'b', 'c']);
+    votes.push(['ALPHA', 'BETA', 'GAMMA']);
   });
   range(42).forEach(() => {
-    votes.push(['a', 'c', 'b']);
+    votes.push(['ALPHA', 'GAMMA', 'BETA']);
   });
   range(44).forEach(() => {
-    votes.push(['b', 'a', 'c']);
+    votes.push(['BETA', 'ALPHA', 'GAMMA']);
   });
   range(46).forEach(() => {
-    votes.push(['c', 'a', 'b']);
+    votes.push(['GAMMA', 'ALPHA', 'BETA']);
   });
   range(48).forEach(() => {
-    votes.push(['c', 'b', 'a']);
+    votes.push(['GAMMA', 'BETA', 'ALPHA']);
   });
   return votes;
 };
@@ -26,64 +26,64 @@ const genVotes = (): VoteRecord => {
 const genPrimary = (): VoteRecord => {
   const votes: string[][] = [];
   range(400).forEach(() => {
-    votes.push(['a', 'b', 'c']);
+    votes.push(['ALPHA', 'BETA', 'GAMMA']);
   });
   range(420).forEach(() => {
-    votes.push(['a', 'c', 'b']);
+    votes.push(['ALPHA', 'GAMMA', 'BETA']);
   });
   range(440).forEach(() => {
-    votes.push(['b', 'a', 'c']);
+    votes.push(['BETA', 'ALPHA', 'GAMMA']);
   });
   range(460).forEach(() => {
-    votes.push(['c', 'a', 'b']);
+    votes.push(['GAMMA', 'ALPHA', 'BETA']);
   });
   range(480).forEach(() => {
-    votes.push(['c', 'b', 'a']);
+    votes.push(['GAMMA', 'BETA', 'ALPHA']);
   });
   range(400).forEach(() => {
-    votes.push(['d', 'b', 'c']);
+    votes.push(['DELTA', 'BETA', 'GAMMA']);
   });
   range(420).forEach(() => {
-    votes.push(['d', 'c', 'b']);
+    votes.push(['DELTA', 'GAMMA', 'BETA']);
   });
   range(440).forEach(() => {
-    votes.push(['b', 'd', 'c']);
+    votes.push(['BETA', 'DELTA', 'GAMMA']);
   });
   range(460).forEach(() => {
-    votes.push(['c', 'd', 'b']);
+    votes.push(['GAMMA', 'DELTA', 'BETA']);
   });
   range(480).forEach(() => {
-    votes.push(['c', 'b', 'd']);
+    votes.push(['GAMMA', 'BETA', 'DELTA']);
   });
   range(400).forEach(() => {
-    votes.push(['d', 'e', 'c']);
+    votes.push(['DELTA', 'EPSILON', 'GAMMA']);
   });
   range(420).forEach(() => {
-    votes.push(['d', 'c', 'e']);
+    votes.push(['DELTA', 'GAMMA', 'EPSILON']);
   });
   range(440).forEach(() => {
-    votes.push(['e', 'd', 'c']);
+    votes.push(['EPSILON', 'DELTA', 'GAMMA']);
   });
   range(460).forEach(() => {
-    votes.push(['c', 'd', 'e']);
+    votes.push(['GAMMA', 'DELTA', 'EPSILON']);
   });
   range(480).forEach(() => {
-    votes.push(['c', 'e', 'd']);
+    votes.push(['GAMMA', 'EPSILON', 'DELTA']);
   });
   range(400).forEach(() => {
-    votes.push(['a', 'e', 'c']);
+    votes.push(['ALPHA', 'EPSILON', 'GAMMA']);
   });
   range(420).forEach(() => {
-    votes.push(['a', 'f', 'b']);
+    votes.push(['ALPHA', 'ZETA', 'BETA']);
   });
   range(440).forEach(() => {
-    votes.push(['b', 'a', 'f']);
+    votes.push(['BETA', 'ALPHA', 'ZETA']);
   });
   range(460).forEach(() => {
-    votes.push(['f', 'a', 'b']);
+    votes.push(['ZETA', 'ALPHA', 'BETA']);
   });
   range(480).forEach(() => {
-    votes.push(['f', 'b', 'a']);
+    votes.push(['ZETA', 'BETA', 'ALPHA']);
   });
   return votes;
 };
@@ -131,9 +131,9 @@ describe('class VoteTallier', () => {
       data.expected = {
         round: 1,
         results: {
-          a: 82,
-          b: 44,
-          c: 94,
+          ALPHA: 82,
+          BETA: 44,
+          GAMMA: 94,
         },
       };
       expect(round).toEqual(data.expected);
@@ -146,9 +146,9 @@ describe('class VoteTallier', () => {
       expect(reports).toEqual([
         {
           round: 1,
-          results: { a: 82, b: 44, c: 94 },
+          results: { ALPHA: 82, BETA: 44, GAMMA: 94 },
           outcome: {
-            candidate: 'b',
+            candidate: 'BETA',
             action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 44,
             round: 1,
@@ -157,16 +157,16 @@ describe('class VoteTallier', () => {
         },
         {
           round: 2,
-          results: { a: 126, c: 94 },
+          results: { ALPHA: 126, GAMMA: 94 },
           outcome: {
-            candidate: 'a',
+            candidate: 'ALPHA',
             action: 'ELECTED - MET QUOTA',
             round: 2,
             seats: 1,
             votesTransferred: 15,
           },
         },
-        { round: 3, results: { c: 108.99999999999996 } },
+        { round: 3, results: { GAMMA: 108.99999999999996 } },
       ]);
     });
     it('correctly tallies STV', async () => {
@@ -176,9 +176,9 @@ describe('class VoteTallier', () => {
       expect(reports).toEqual([
         {
           round: 1,
-          results: { a: 82, b: 44, c: 94 },
+          results: { ALPHA: 82, BETA: 44, GAMMA: 94 },
           outcome: {
-            candidate: 'c',
+            candidate: 'GAMMA',
             action: 'ELECTED - MET QUOTA',
             round: 1,
             seats: 1,
@@ -187,16 +187,16 @@ describe('class VoteTallier', () => {
         },
         {
           round: 2,
-          results: { a: 91.78723404255305, b: 54.21276595744666 },
+          results: { ALPHA: 91.78723404255305, BETA: 54.21276595744666 },
           outcome: {
-            candidate: 'a',
+            candidate: 'ALPHA',
             action: 'ELECTED - MET QUOTA',
             round: 2,
             seats: 1,
             votesTransferred: 17.787234042553052,
           },
         },
-        { round: 3, results: { b: 71.99999999999967 } },
+        { round: 3, results: { BETA: 71.99999999999967 } },
       ]);
     });
   });
@@ -219,9 +219,16 @@ describe('class VoteTallier', () => {
       expect(reports).toEqual([
         {
           round: 1,
-          results: { a: 1640, b: 1320, c: 2820, d: 1640, e: 440, f: 940 },
+          results: {
+            ALPHA: 1640,
+            BETA: 1320,
+            GAMMA: 2820,
+            DELTA: 1640,
+            EPSILON: 440,
+            ZETA: 940,
+          },
           outcome: {
-            candidate: 'e',
+            candidate: 'EPSILON',
             action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 440,
             round: 1,
@@ -230,9 +237,15 @@ describe('class VoteTallier', () => {
         },
         {
           round: 2,
-          results: { a: 1640, b: 1320, c: 2820, d: 2080, f: 940 },
+          results: {
+            ALPHA: 1640,
+            BETA: 1320,
+            GAMMA: 2820,
+            DELTA: 2080,
+            ZETA: 940,
+          },
           outcome: {
-            candidate: 'f',
+            candidate: 'ZETA',
             action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 940,
             round: 2,
@@ -241,9 +254,9 @@ describe('class VoteTallier', () => {
         },
         {
           round: 3,
-          results: { a: 2100, b: 1800, c: 2820, d: 2080 },
+          results: { ALPHA: 2100, BETA: 1800, GAMMA: 2820, DELTA: 2080 },
           outcome: {
-            candidate: 'b',
+            candidate: 'BETA',
             action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 1800,
             round: 3,
@@ -252,9 +265,9 @@ describe('class VoteTallier', () => {
         },
         {
           round: 4,
-          results: { a: 3460, c: 2820, d: 2520 },
+          results: { ALPHA: 3460, GAMMA: 2820, DELTA: 2520 },
           outcome: {
-            candidate: 'd',
+            candidate: 'DELTA',
             action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 2520,
             round: 4,
@@ -263,16 +276,16 @@ describe('class VoteTallier', () => {
         },
         {
           round: 5,
-          results: { a: 3460, c: 5340 },
+          results: { ALPHA: 3460, GAMMA: 5340 },
           outcome: {
-            candidate: 'c',
+            candidate: 'GAMMA',
             action: 'ELECTED - MET QUOTA',
             round: 5,
             seats: 1,
             votesTransferred: 939,
           },
         },
-        { round: 6, results: { a: 3625.292134831411 } },
+        { round: 6, results: { ALPHA: 3625.292134831411 } },
       ]);
     });
     it('works for STV', () => {
@@ -282,9 +295,16 @@ describe('class VoteTallier', () => {
       expect(reports).toEqual([
         {
           round: 1,
-          results: { a: 1640, b: 1320, c: 2820, d: 1640, e: 440, f: 940 },
+          results: {
+            ALPHA: 1640,
+            BETA: 1320,
+            GAMMA: 2820,
+            DELTA: 1640,
+            EPSILON: 440,
+            ZETA: 940,
+          },
           outcome: {
-            candidate: 'c',
+            candidate: 'GAMMA',
             action: 'ELECTED - MET QUOTA',
             round: 1,
             seats: 1,
@@ -294,14 +314,14 @@ describe('class VoteTallier', () => {
         {
           round: 2,
           results: {
-            a: 1740.9716312056798,
-            b: 1530.7234042553318,
-            d: 1841.9432624113597,
-            e: 545.3617021276659,
-            f: 940,
+            ALPHA: 1740.9716312056798,
+            BETA: 1530.7234042553318,
+            DELTA: 1841.9432624113597,
+            EPSILON: 545.3617021276659,
+            ZETA: 940,
           },
           outcome: {
-            candidate: 'e',
+            candidate: 'EPSILON',
             action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 545.3617021276659,
             round: 2,
@@ -311,13 +331,13 @@ describe('class VoteTallier', () => {
         {
           round: 3,
           results: {
-            a: 1740.9716312056798,
-            b: 1530.7234042553318,
-            d: 2387.304964538812,
-            f: 940,
+            ALPHA: 1740.9716312056798,
+            BETA: 1530.7234042553318,
+            DELTA: 2387.304964538812,
+            ZETA: 940,
           },
           outcome: {
-            candidate: 'd',
+            candidate: 'DELTA',
             action: 'ELECTED - MET QUOTA',
             round: 3,
             seats: 1,
@@ -326,9 +346,13 @@ describe('class VoteTallier', () => {
         },
         {
           round: 4,
-          results: { a: 1740.9716312056798, b: 1602.595908875287, f: 940 },
+          results: {
+            ALPHA: 1740.9716312056798,
+            BETA: 1602.595908875287,
+            ZETA: 940,
+          },
           outcome: {
-            candidate: 'f',
+            candidate: 'ZETA',
             action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 940,
             round: 4,
@@ -337,9 +361,9 @@ describe('class VoteTallier', () => {
         },
         {
           round: 5,
-          results: { a: 2200.97163120568, b: 2082.595908875287 },
+          results: { ALPHA: 2200.97163120568, BETA: 2082.595908875287 },
           outcome: {
-            candidate: 'b',
+            candidate: 'BETA',
             action: 'ELIMINATED - FEWEST VOTES',
             votesTransferred: 2082.595908875287,
             round: 5,
@@ -348,9 +372,9 @@ describe('class VoteTallier', () => {
         },
         {
           round: 6,
-          results: { a: 3666.3333333333458 },
+          results: { ALPHA: 3666.3333333333458 },
           outcome: {
-            candidate: 'a',
+            candidate: 'ALPHA',
             action: 'ELECTED - OTHER CANDIDATES ELIMINATED',
             round: 6,
             seats: 1,
@@ -381,9 +405,16 @@ describe('class VoteTallier', () => {
       expect(reports).toEqual([
         {
           round: 1,
-          results: { a: 1640, b: 1320, c: 2820, d: 1640, e: 440, f: 940 },
+          results: {
+            ALPHA: 1640,
+            BETA: 1320,
+            GAMMA: 2820,
+            DELTA: 1640,
+            EPSILON: 440,
+            ZETA: 940,
+          },
           outcome: {
-            candidate: 'c',
+            candidate: 'GAMMA',
             action: 'ELECTED - MET QUOTA',
             round: 1,
             seats: 7,
@@ -393,14 +424,14 @@ describe('class VoteTallier', () => {
         {
           round: 2,
           results: {
-            a: 1696.9290780141682,
-            b: 1438.8085106382914,
-            d: 1753.8581560283365,
-            e: 499.40425531915935,
-            f: 940,
+            ALPHA: 1696.9290780141682,
+            BETA: 1438.8085106382914,
+            DELTA: 1753.8581560283365,
+            EPSILON: 499.40425531915935,
+            ZETA: 940,
           },
           outcome: {
-            candidate: 'd',
+            candidate: 'DELTA',
             action: 'ELECTED - MET QUOTA',
             round: 2,
             seats: 4,
@@ -410,13 +441,13 @@ describe('class VoteTallier', () => {
         {
           round: 3,
           results: {
-            a: 1696.9290780141682,
-            b: 1609.7375886525047,
-            e: 670.3333333333111,
-            f: 940,
+            ALPHA: 1696.9290780141682,
+            BETA: 1609.7375886525047,
+            EPSILON: 670.3333333333111,
+            ZETA: 940,
           },
           outcome: {
-            candidate: 'a',
+            candidate: 'ALPHA',
             action: 'ELECTED - MET QUOTA',
             round: 3,
             seats: 4,
@@ -426,12 +457,12 @@ describe('class VoteTallier', () => {
         {
           round: 4,
           results: {
-            b: 1756.981570100909,
-            e: 737.4967950727031,
-            f: 1010.5216348263618,
+            BETA: 1756.981570100909,
+            EPSILON: 737.4967950727031,
+            ZETA: 1010.5216348263618,
           },
           outcome: {
-            candidate: 'b',
+            candidate: 'BETA',
             action: 'ELECTED - MET QUOTA',
             round: 4,
             seats: 4,
@@ -440,9 +471,9 @@ describe('class VoteTallier', () => {
         },
         {
           round: 5,
-          results: { e: 737.4967950727031, f: 1096.9151937728473 },
+          results: { EPSILON: 737.4967950727031, ZETA: 1096.9151937728473 },
           outcome: {
-            candidate: 'f',
+            candidate: 'ZETA',
             action: 'ELECTED - MET QUOTA',
             round: 5,
             seats: 3,
@@ -451,9 +482,9 @@ describe('class VoteTallier', () => {
         },
         {
           round: 6,
-          results: { e: 737.4967950727031 },
+          results: { EPSILON: 737.4967950727031 },
           outcome: {
-            candidate: 'e',
+            candidate: 'EPSILON',
             action: 'ELECTED - MET QUOTA',
             round: 6,
             seats: 2,
