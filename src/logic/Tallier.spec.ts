@@ -6,7 +6,7 @@ import Tallier, {
   findLagger,
   countValidBallots,
   calcDroopQuota,
-} from './tallier';
+} from './Tallier';
 import { genPrimary } from './genElections';
 const test = genPrimary();
 const data: any = {};
