@@ -1,6 +1,6 @@
 import { range } from 'lodash';
 import VoteTallier from './VoteTallier';
-import { ElectionType, CandidateAction, VoteRecord } from '../types';
+import { ElectionType, VoteRecord } from '../types';
 import Ballot from './Ballot';
 
 const genVotes = (): VoteRecord => {
@@ -207,11 +207,6 @@ describe('class VoteTallier', () => {
       electionType: ElectionType.MultiSeat,
       seats: 3,
     });
-    data.bigPrimary = new VoteTallier({
-      votes: genPrimary(),
-      electionType: ElectionType.DemocraticPrimary,
-      seats: 24,
-    });
     it('works for IRV', async () => {
       data.bigIRV.tallyVotes();
       const { reports } = data.bigIRV.debug();
@@ -379,116 +374,6 @@ describe('class VoteTallier', () => {
             round: 6,
             seats: 1,
             votesTransferred: 0,
-          },
-        },
-        { round: 7, results: {} },
-      ]);
-    });
-    it('works for a Primary', () => {
-      const initialSeats = data.bigPrimary.debug().seats;
-      data.bigPrimary.tallyVotes();
-      const { reports } = data.bigPrimary.debug();
-      const totalDelegatesAssigned = reports.reduce((pv: number, cv: any) => {
-        if (!cv.outcome || cv.outcome.action === CandidateAction.eliminated) {
-          return pv;
-        }
-        if (
-          cv.outcome.action === CandidateAction.elected ||
-          cv.outcome.action === CandidateAction.assigned
-        ) {
-          return pv + cv.outcome.seats;
-        }
-        return pv;
-      }, 0);
-      expect(totalDelegatesAssigned).toBe(initialSeats); // sanity check.
-
-      expect(reports).toEqual([
-        {
-          round: 1,
-          results: {
-            ALPHA: 1640,
-            BETA: 1320,
-            GAMMA: 2820,
-            DELTA: 1640,
-            EPSILON: 440,
-            ZETA: 940,
-          },
-          outcome: {
-            candidate: 'GAMMA',
-            action: 'ELECTED - MET QUOTA',
-            round: 1,
-            seats: 7,
-            votesTransferred: 349,
-          },
-        },
-        {
-          round: 2,
-          results: {
-            ALPHA: 1696.9290780141682,
-            BETA: 1438.8085106382914,
-            DELTA: 1753.8581560283365,
-            EPSILON: 499.40425531915935,
-            ZETA: 940,
-          },
-          outcome: {
-            candidate: 'DELTA',
-            action: 'ELECTED - MET QUOTA',
-            round: 2,
-            seats: 4,
-            votesTransferred: 341.85815602833645,
-          },
-        },
-        {
-          round: 3,
-          results: {
-            ALPHA: 1696.9290780141682,
-            BETA: 1609.7375886525047,
-            EPSILON: 670.3333333333111,
-            ZETA: 940,
-          },
-          outcome: {
-            candidate: 'ALPHA',
-            action: 'ELECTED - MET QUOTA',
-            round: 3,
-            seats: 4,
-            votesTransferred: 284.9290780141682,
-          },
-        },
-        {
-          round: 4,
-          results: {
-            BETA: 1756.981570100909,
-            EPSILON: 737.4967950727031,
-            ZETA: 1010.5216348263618,
-          },
-          outcome: {
-            candidate: 'BETA',
-            action: 'ELECTED - MET QUOTA',
-            round: 4,
-            seats: 4,
-            votesTransferred: 344.98157010090904,
-          },
-        },
-        {
-          round: 5,
-          results: { EPSILON: 737.4967950727031, ZETA: 1096.9151937728473 },
-          outcome: {
-            candidate: 'ZETA',
-            action: 'ELECTED - MET QUOTA',
-            round: 5,
-            seats: 3,
-            votesTransferred: 37.91519377284726,
-          },
-        },
-        {
-          round: 6,
-          results: { EPSILON: 737.4967950727031 },
-          outcome: {
-            candidate: 'EPSILON',
-            action: 'ELECTED - MET QUOTA',
-            round: 6,
-            seats: 2,
-            votesTransferred: 31.496795072703094,
           },
         },
         { round: 7, results: {} },
