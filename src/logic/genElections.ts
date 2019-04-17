@@ -1,9 +1,7 @@
-import { range } from 'lodash';
-import DemTallier from './DemTallier';
-import { ElectionType, VoteRecord } from '../types';
-import Ballot from './Ballot';
+import { VoteRecord } from '../types';
+import range from 'lodash/range';
 
-const genVotes = (): VoteRecord => {
+export const genVotes = (): VoteRecord => {
   const votes: string[][] = [];
   range(40).forEach(() => {
     votes.push(['ALPHA', 'BETA', 'GAMMA']);
@@ -23,7 +21,7 @@ const genVotes = (): VoteRecord => {
   return votes;
 };
 
-const genPrimary = (): VoteRecord => {
+export const genPrimary = (): VoteRecord => {
   const votes: string[][] = [];
   range(400).forEach(() => {
     votes.push(['ALPHA', 'BETA', 'GAMMA']);
@@ -87,6 +85,3 @@ const genPrimary = (): VoteRecord => {
   });
   return votes;
 };
-
-const sample: VoteRecord = genVotes();
-const data: any = {};

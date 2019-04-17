@@ -23,6 +23,7 @@ export interface IElectedSeat {
   seats: number;
   round: number;
   votesTransferred: number;
+  changes?: any;
 }
 
 export interface IVotingRoundReport {
@@ -30,7 +31,7 @@ export interface IVotingRoundReport {
   results: {
     [key: string]: number;
   };
-  outcome?: IElectedSeat;
+  outcome?: IElectedSeat[];
 }
 
 export interface IVoteTallier {

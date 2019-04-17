@@ -68,11 +68,11 @@ export default class VoteTallier {
   private getInitialReport = (): IVotingRoundReport => {
     // get this round's ballot in the form of a report
     this.ballots = this.ballots.filter(
-      (ballot: Ballot) => ballot.candidates.length > 0
+      (ballot: Ballot) => ballot.votingPrefs.length > 0
     );
     return this.ballots.reduce(
       (runningCount: IVotingRoundReport, currentBallot: Ballot) => {
-        const candidate: string = currentBallot.candidates[0]; // this round's choice
+        const candidate: string = currentBallot.votingPrefs[0]; // this round's choice
         if (!runningCount.results[candidate]) {
           runningCount.results[candidate] = 0;
         }

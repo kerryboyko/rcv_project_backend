@@ -1,92 +1,7 @@
-import { range } from 'lodash';
 import VoteTallier from './VoteTallier';
 import { ElectionType, VoteRecord } from '../types';
 import Ballot from './Ballot';
-
-const genVotes = (): VoteRecord => {
-  const votes: string[][] = [];
-  range(40).forEach(() => {
-    votes.push(['ALPHA', 'BETA', 'GAMMA']);
-  });
-  range(42).forEach(() => {
-    votes.push(['ALPHA', 'GAMMA', 'BETA']);
-  });
-  range(44).forEach(() => {
-    votes.push(['BETA', 'ALPHA', 'GAMMA']);
-  });
-  range(46).forEach(() => {
-    votes.push(['GAMMA', 'ALPHA', 'BETA']);
-  });
-  range(48).forEach(() => {
-    votes.push(['GAMMA', 'BETA', 'ALPHA']);
-  });
-  return votes;
-};
-
-const genPrimary = (): VoteRecord => {
-  const votes: string[][] = [];
-  range(400).forEach(() => {
-    votes.push(['ALPHA', 'BETA', 'GAMMA']);
-  });
-  range(420).forEach(() => {
-    votes.push(['ALPHA', 'GAMMA', 'BETA']);
-  });
-  range(440).forEach(() => {
-    votes.push(['BETA', 'ALPHA', 'GAMMA']);
-  });
-  range(460).forEach(() => {
-    votes.push(['GAMMA', 'ALPHA', 'BETA']);
-  });
-  range(480).forEach(() => {
-    votes.push(['GAMMA', 'BETA', 'ALPHA']);
-  });
-  range(400).forEach(() => {
-    votes.push(['DELTA', 'BETA', 'GAMMA']);
-  });
-  range(420).forEach(() => {
-    votes.push(['DELTA', 'GAMMA', 'BETA']);
-  });
-  range(440).forEach(() => {
-    votes.push(['BETA', 'DELTA', 'GAMMA']);
-  });
-  range(460).forEach(() => {
-    votes.push(['GAMMA', 'DELTA', 'BETA']);
-  });
-  range(480).forEach(() => {
-    votes.push(['GAMMA', 'BETA', 'DELTA']);
-  });
-  range(400).forEach(() => {
-    votes.push(['DELTA', 'EPSILON', 'GAMMA']);
-  });
-  range(420).forEach(() => {
-    votes.push(['DELTA', 'GAMMA', 'EPSILON']);
-  });
-  range(440).forEach(() => {
-    votes.push(['EPSILON', 'DELTA', 'GAMMA']);
-  });
-  range(460).forEach(() => {
-    votes.push(['GAMMA', 'DELTA', 'EPSILON']);
-  });
-  range(480).forEach(() => {
-    votes.push(['GAMMA', 'EPSILON', 'DELTA']);
-  });
-  range(400).forEach(() => {
-    votes.push(['ALPHA', 'EPSILON', 'GAMMA']);
-  });
-  range(420).forEach(() => {
-    votes.push(['ALPHA', 'ZETA', 'BETA']);
-  });
-  range(440).forEach(() => {
-    votes.push(['BETA', 'ALPHA', 'ZETA']);
-  });
-  range(460).forEach(() => {
-    votes.push(['ZETA', 'ALPHA', 'BETA']);
-  });
-  range(480).forEach(() => {
-    votes.push(['ZETA', 'BETA', 'ALPHA']);
-  });
-  return votes;
-};
+import { genPrimary, genVotes } from './genElections';
 
 const sample: VoteRecord = genVotes();
 const data: any = {};
@@ -106,7 +21,7 @@ describe('class VoteTallier', () => {
       data.test1 = new VoteTallier({ votes: sample });
       const results1 = data.test1.debug();
       expect(
-        results1.ballots.map((ballot: Ballot): string[] => ballot.candidates)
+        results1.ballots.map((ballot: Ballot): string[] => ballot.votingPrefs)
       ).toEqual(sample);
       expect(results1.seats).toEqual(1);
       expect(results1.quota).toEqual(111);
@@ -119,7 +34,7 @@ describe('class VoteTallier', () => {
       });
       const results2 = data.test2.debug();
       expect(
-        results2.ballots.map((ballot: Ballot): string[] => ballot.candidates)
+        results2.ballots.map((ballot: Ballot): string[] => ballot.votingPrefs)
       ).toEqual(sample);
       expect(results2.seats).toEqual(2);
       expect(results2.quota).toEqual(74);
