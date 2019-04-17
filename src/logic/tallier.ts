@@ -157,12 +157,15 @@ export default class Tallier {
     const newBallots = reduceIdenticalBallots(
       this.ballots.slice().map(
         (ballot: BallotTuple): BallotTuple => {
-          let [vote, weight] = ballot;
+          const [vote, weight] = ballot;
+          const newVote = vote
+            .slice()
+            .filter((cand: string) => cand !== winner);
           if (vote[0] === winner) {
-            weight = weight * percentage;
-            vote = vote.slice(1);
+            const newWeight = weight * percentage;
+            return [newVote, newWeight];
           }
-          return [vote, weight];
+          return [newVote, weight];
         }
       )
     );

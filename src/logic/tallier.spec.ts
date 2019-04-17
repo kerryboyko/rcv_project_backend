@@ -90,7 +90,6 @@ describe('tallier', () => {
       const { quota, winners, reports } = data.irv;
       expect(quota).toBe(4401);
       expect(Array.from(winners.entries())).toEqual([['GAMMA', 1]]);
-      console.log(JSON.stringify(reports));
       expect(reports).toEqual([
         {
           round: 1,
@@ -172,6 +171,129 @@ describe('tallier', () => {
               round: 5,
               votesTransferred: 939,
               changes: { ALPHA: 165.29213483146077 },
+            },
+          ],
+        },
+      ]);
+    });
+    it('works for STV', async () => {
+      data.stv.tally();
+      const { quota, winners, reports } = data.stv;
+      expect(quota).toBe(2201);
+      expect(Array.from(winners.entries())).toEqual([
+        ['GAMMA', 1],
+        ['DELTA', 1],
+        ['ALPHA', 1],
+      ]);
+      expect(reports).toEqual([
+        {
+          round: 1,
+          results: {
+            ALPHA: 1640,
+            BETA: 1320,
+            GAMMA: 2820,
+            DELTA: 1640,
+            EPSILON: 440,
+            ZETA: 940,
+          },
+          outcome: [
+            {
+              candidate: 'GAMMA',
+              action: 'ELECTED - MET QUOTA',
+              seats: 1,
+              round: 1,
+              votesTransferred: 619,
+              changes: {
+                ALPHA: 100.9716312056737,
+                BETA: 210.7234042553191,
+                DELTA: 201.9432624113474,
+                EPSILON: 105.36170212765956,
+                ZETA: 0,
+              },
+            },
+          ],
+        },
+        {
+          round: 2,
+          results: {
+            ALPHA: 1740.9716312056737,
+            BETA: 1530.723404255319,
+            DELTA: 1841.9432624113474,
+            EPSILON: 545.3617021276596,
+            ZETA: 940,
+          },
+          outcome: [
+            {
+              candidate: 'EPSILON',
+              action: 'ELIMINATED - FEWEST VOTES',
+              seats: 0,
+              round: 2,
+              votesTransferred: 545.3617021276596,
+              changes: { ALPHA: 0, BETA: 0, DELTA: 545.3617021276596, ZETA: 0 },
+            },
+          ],
+        },
+        {
+          round: 3,
+          results: {
+            ALPHA: 1740.9716312056737,
+            BETA: 1530.723404255319,
+            DELTA: 2387.304964539007,
+            ZETA: 940,
+          },
+          outcome: [
+            {
+              candidate: 'DELTA',
+              action: 'ELECTED - MET QUOTA',
+              seats: 1,
+              round: 3,
+              votesTransferred: 186.30496453900696,
+              changes: { ALPHA: 0, BETA: 71.87250462001066, ZETA: 0 },
+            },
+          ],
+        },
+        {
+          round: 4,
+          results: {
+            ALPHA: 1740.9716312056737,
+            BETA: 1602.5959088753298,
+            ZETA: 940,
+          },
+          outcome: [
+            {
+              candidate: 'ZETA',
+              action: 'ELIMINATED - FEWEST VOTES',
+              seats: 0,
+              round: 4,
+              votesTransferred: 940,
+              changes: { ALPHA: 459.9999999999998, BETA: 480 },
+            },
+          ],
+        },
+        {
+          round: 5,
+          results: { ALPHA: 2200.9716312056735, BETA: 2082.5959088753298 },
+          outcome: [
+            {
+              candidate: 'BETA',
+              action: 'ELIMINATED - FEWEST VOTES',
+              seats: 0,
+              round: 5,
+              votesTransferred: 2082.5959088753298,
+              changes: { ALPHA: 1465.3617021276596 },
+            },
+          ],
+        },
+        {
+          round: 6,
+          results: { ALPHA: 3666.333333333333 },
+          outcome: [
+            {
+              candidate: 'ALPHA',
+              action: 'ELECTED - OTHER CANDIDATES ELIMINATED',
+              seats: 1,
+              round: 6,
+              votesTransferred: 0,
             },
           ],
         },
