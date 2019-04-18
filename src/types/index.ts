@@ -10,6 +10,8 @@ export enum CandidateAction {
   elected = 'ELECTED - MET QUOTA',
   assigned = 'ELECTED - OTHER CANDIDATES ELIMINATED',
   eliminated = 'ELIMINATED - FEWEST VOTES',
+  eliminatedThresh = 'ELIMINATED - FAILED TO PASS THRESHOLD',
+  nextRound = 'PASSED - PASSED THRESHOLD',
 }
 
 // Candidate shortcode, number of votes;
@@ -23,6 +25,7 @@ export interface IElectedSeat {
   seats: number;
   round: number;
   votesTransferred: number;
+  changes?: any;
 }
 
 export interface IVotingRoundReport {
@@ -30,7 +33,7 @@ export interface IVotingRoundReport {
   results: {
     [key: string]: number;
   };
-  outcome?: IElectedSeat;
+  outcome?: IElectedSeat[];
 }
 
 export interface IVoteTallier {
@@ -62,3 +65,5 @@ export interface IElection {
   electionStatus: ElectionStatus;
   [key: string]: any;
 }
+
+export type BallotTuple = [string[], number]; // votes, weight;
