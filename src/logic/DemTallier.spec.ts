@@ -34,16 +34,17 @@ describe('/src/logic/DemTallier', () => {
         ]);
       });
     });
-    describe('public.threshTally', () => {
-      it('finds the winners to pass the threshhold', () => {
-        const winners = data.dem.threshTally();
-        expect(winners.sort()).toEqual(
-          ['ALPHA', 'BETA', 'GAMMA', 'DELTA'].sort()
-        );
-        expect(Array.from(data.dem.losers).sort()).toEqual(
-          ['EPSILON', 'ZETA'].sort()
-        );
-        expect(data.dem.threshReports).toEqual([
+    describe('DemTallier.tally()', () => {
+      it('returns a jefferson tally', () => {
+        const tally = data.dem.tally();
+        expect(tally).toEqual({
+          ALPHA: { seatsAllocated: 6, votes: 2100 },
+          BETA: { seatsAllocated: 5, votes: 1800 },
+          GAMMA: { seatsAllocated: 8, votes: 2820 },
+          DELTA: { seatsAllocated: 5, votes: 2080 },
+        });
+
+        expect(data.dem.reports).toEqual([
           {
             round: 1,
             results: {
@@ -56,223 +57,560 @@ describe('/src/logic/DemTallier', () => {
             },
             outcome: [
               {
-                candidate: 'GAMMA',
-                action: 'PASSED - PASSED THRESHOLD',
+                candidate: 'EPSILON',
+                action: 'ELIMINATED - FEWEST VOTES',
                 seats: 0,
                 round: 1,
-                votesTransferred: 1500,
-                changes: {
-                  ALPHA: 244.68085106382978,
-                  BETA: 510.63829787234044,
-                  DELTA: 489.36170212765956,
-                  EPSILON: 255.31914893617022,
-                  ZETA: 0,
-                },
+                votesTransferred: 440,
+                changes: { ALPHA: 0, BETA: 0, GAMMA: 0, DELTA: 440, ZETA: 0 },
               },
             ],
           },
           {
             round: 2,
             results: {
-              ALPHA: 1884.6808510638298,
-              BETA: 1830.6382978723404,
-              DELTA: 2129.3617021276596,
-              EPSILON: 695.3191489361702,
+              ALPHA: 1640,
+              BETA: 1320,
+              GAMMA: 2820,
+              DELTA: 2080,
               ZETA: 940,
             },
             outcome: [
               {
-                candidate: 'DELTA',
-                action: 'PASSED - PASSED THRESHOLD',
+                candidate: 'ZETA',
+                action: 'ELIMINATED - FEWEST VOTES',
                 seats: 0,
                 round: 2,
-                votesTransferred: 809.3617021276596,
-                changes: {
-                  ALPHA: 0,
-                  BETA: 404.6808510638298,
-                  EPSILON: 404.6808510638298,
-                  ZETA: 0,
-                },
+                votesTransferred: 940,
+                changes: { ALPHA: 460, BETA: 480, GAMMA: 0, DELTA: 0 },
               },
             ],
           },
           {
             round: 3,
             results: {
-              ALPHA: 1884.6808510638298,
-              BETA: 2235.31914893617,
-              EPSILON: 1100,
-              ZETA: 940,
+              ALPHA: { seatsAllocated: 0, votes: 2100 },
+              BETA: { seatsAllocated: 0, votes: 1800 },
+              GAMMA: { seatsAllocated: 1, votes: 2820 },
+              DELTA: { seatsAllocated: 0, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 2100,
+              BETA: 1800,
+              GAMMA: 2820,
+              DELTA: 2080,
             },
             outcome: [
               {
-                candidate: 'BETA',
-                action: 'PASSED - PASSED THRESHOLD',
-                seats: 0,
-                round: 3,
-                votesTransferred: 915.3191489361702,
-                changes: {
-                  ALPHA: 464.890822265696,
-                  EPSILON: 0,
-                  ZETA: 0,
-                },
+                candidate: 'GAMMA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 23,
               },
             ],
           },
           {
             round: 4,
             results: {
-              ALPHA: 2349.5716733295258,
-              EPSILON: 1100,
-              ZETA: 940,
+              ALPHA: { seatsAllocated: 1, votes: 2100 },
+              BETA: { seatsAllocated: 0, votes: 1800 },
+              GAMMA: { seatsAllocated: 1, votes: 2820 },
+              DELTA: { seatsAllocated: 0, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 2100,
+              BETA: 1800,
+              GAMMA: 1410,
+              DELTA: 2080,
             },
             outcome: [
               {
                 candidate: 'ALPHA',
-                action: 'PASSED - PASSED THRESHOLD',
-                seats: 0,
-                round: 4,
-                votesTransferred: 1029.5716733295258,
-                changes: {
-                  EPSILON: 175.27818964050448,
-                  ZETA: 262.9923607841324,
-                },
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 22,
               },
             ],
           },
           {
             round: 5,
             results: {
-              EPSILON: 1275.2781896405045,
-              ZETA: 1202.9923607841324,
+              ALPHA: { seatsAllocated: 1, votes: 2100 },
+              BETA: { seatsAllocated: 0, votes: 1800 },
+              GAMMA: { seatsAllocated: 1, votes: 2820 },
+              DELTA: { seatsAllocated: 1, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 1050,
+              BETA: 1800,
+              GAMMA: 1410,
+              DELTA: 2080,
             },
             outcome: [
               {
-                candidate: 'ZETA',
-                action: 'ELIMINATED - FAILED TO PASS THRESHOLD',
-                seats: 0,
-                round: 5,
-                votesTransferred: 1202.9923607841324,
-                changes: {
-                  EPSILON: 0,
-                },
+                candidate: 'DELTA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 21,
               },
             ],
           },
           {
             round: 6,
             results: {
-              EPSILON: 1275.2781896405045,
+              ALPHA: { seatsAllocated: 1, votes: 2100 },
+              BETA: { seatsAllocated: 1, votes: 1800 },
+              GAMMA: { seatsAllocated: 1, votes: 2820 },
+              DELTA: { seatsAllocated: 1, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 1050,
+              BETA: 1800,
+              GAMMA: 1410,
+              DELTA: 1040,
             },
             outcome: [
               {
-                candidate: 'EPSILON',
-                action: 'ELIMINATED - FAILED TO PASS THRESHOLD',
-                seats: 0,
-                round: 6,
-                votesTransferred: 1275.2781896405045,
-                changes: {},
+                candidate: 'BETA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 20,
               },
             ],
           },
-        ]);
-      });
-    });
-    describe('public resetVotesAfterThresh', () => {
-      it('resets the votes after we find the delegates', () => {
-        data.dem.resetVotesAfterThresh();
-        expect(data.dem.wastedVotes).toBe(0);
-        expect(data.dem.quota).toBe(353);
-        expect(data.dem.ballots).toEqual([
-          [['ALPHA', 'BETA', 'GAMMA'], 400],
-          [['ALPHA', 'GAMMA', 'BETA'], 420],
-          [['BETA', 'ALPHA', 'GAMMA'], 440],
-          [['GAMMA', 'ALPHA', 'BETA'], 460],
-          [['GAMMA', 'BETA', 'ALPHA'], 480],
-          [['DELTA', 'BETA', 'GAMMA'], 400],
-          [['DELTA', 'GAMMA', 'BETA'], 420],
-          [['BETA', 'DELTA', 'GAMMA'], 440],
-          [['GAMMA', 'DELTA', 'BETA'], 460],
-          [['GAMMA', 'BETA', 'DELTA'], 480],
-          [['DELTA', 'GAMMA'], 1260],
-          [['GAMMA', 'DELTA'], 940],
-          [['ALPHA', 'GAMMA'], 400],
-          [['ALPHA', 'BETA'], 880],
-          [['BETA', 'ALPHA'], 920],
-        ]);
-      });
-    });
-    describe('public tallyFinal()', () => {
-      it('makes a final tally', () => {
-        const end = data.dem.tallyFinal();
-        expect(Array.from(end.entries())).toEqual([
-          ['GAMMA', 7],
-          ['DELTA', 6],
-          ['ALPHA', 6],
-          ['BETA', 5],
-        ]);
-        const { finalReports } = data.dem;
-        expect(finalReports).toEqual([
           {
-            round: 1,
-            results: { ALPHA: 2100, BETA: 1800, GAMMA: 2820, DELTA: 2080 },
+            round: 7,
+            results: {
+              ALPHA: { seatsAllocated: 1, votes: 2100 },
+              BETA: { seatsAllocated: 1, votes: 1800 },
+              GAMMA: { seatsAllocated: 2, votes: 2820 },
+              DELTA: { seatsAllocated: 1, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 1050,
+              BETA: 900,
+              GAMMA: 1410,
+              DELTA: 1040,
+            },
             outcome: [
               {
                 candidate: 'GAMMA',
-                action: 'ELECTED - MET QUOTA',
-                seats: 7,
-                round: 6,
-                votesTransferred: 349,
-                changes: {
-                  ALPHA: 56.9290780141846,
-                  BETA: 118.80851063829778,
-                  DELTA: 173.26241134751763,
-                },
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 19,
               },
             ],
           },
           {
-            round: 2,
+            round: 8,
             results: {
-              ALPHA: 2156.9290780141846,
-              BETA: 1918.8085106382978,
-              DELTA: 2253.2624113475176,
+              ALPHA: { seatsAllocated: 2, votes: 2100 },
+              BETA: { seatsAllocated: 1, votes: 1800 },
+              GAMMA: { seatsAllocated: 2, votes: 2820 },
+              DELTA: { seatsAllocated: 1, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 1050,
+              BETA: 900,
+              GAMMA: 940,
+              DELTA: 1040,
+            },
+            outcome: [
+              {
+                candidate: 'ALPHA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 18,
+              },
+            ],
+          },
+          {
+            round: 9,
+            results: {
+              ALPHA: { seatsAllocated: 2, votes: 2100 },
+              BETA: { seatsAllocated: 1, votes: 1800 },
+              GAMMA: { seatsAllocated: 2, votes: 2820 },
+              DELTA: { seatsAllocated: 2, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 700,
+              BETA: 900,
+              GAMMA: 940,
+              DELTA: 1040,
             },
             outcome: [
               {
                 candidate: 'DELTA',
-                action: 'ELECTED - MET QUOTA',
-                seats: 6,
-                round: 6,
-                votesTransferred: 135.26241134751763,
-                changes: { ALPHA: 0, BETA: 52.641690144743734 },
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 17,
               },
             ],
           },
           {
-            round: 3,
-            results: { ALPHA: 2156.9290780141846, BETA: 1971.4502007830415 },
+            round: 10,
+            results: {
+              ALPHA: { seatsAllocated: 2, votes: 2100 },
+              BETA: { seatsAllocated: 1, votes: 1800 },
+              GAMMA: { seatsAllocated: 3, votes: 2820 },
+              DELTA: { seatsAllocated: 2, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 700,
+              BETA: 900,
+              GAMMA: 940,
+              DELTA: 693.3333333333334,
+            },
             outcome: [
               {
-                candidate: 'ALPHA',
-                action: 'ELECTED - MET QUOTA',
-                seats: 6,
-                round: 6,
-                votesTransferred: 38.9290780141846,
-                changes: { BETA: 31.709725572605976 },
+                candidate: 'GAMMA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 16,
               },
             ],
           },
           {
-            round: 4,
-            results: { BETA: 2003.1599263556475 },
+            round: 11,
+            results: {
+              ALPHA: { seatsAllocated: 2, votes: 2100 },
+              BETA: { seatsAllocated: 2, votes: 1800 },
+              GAMMA: { seatsAllocated: 3, votes: 2820 },
+              DELTA: { seatsAllocated: 2, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 700,
+              BETA: 900,
+              GAMMA: 705,
+              DELTA: 693.3333333333334,
+            },
             outcome: [
               {
                 candidate: 'BETA',
-                action: 'ELECTED - OTHER CANDIDATES ELIMINATED',
-                seats: 5,
-                round: 4,
-                votesTransferred: 0,
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 15,
+              },
+            ],
+          },
+          {
+            round: 12,
+            results: {
+              ALPHA: { seatsAllocated: 2, votes: 2100 },
+              BETA: { seatsAllocated: 2, votes: 1800 },
+              GAMMA: { seatsAllocated: 4, votes: 2820 },
+              DELTA: { seatsAllocated: 2, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 700,
+              BETA: 600,
+              GAMMA: 705,
+              DELTA: 693.3333333333334,
+            },
+            outcome: [
+              {
+                candidate: 'GAMMA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 14,
+              },
+            ],
+          },
+          {
+            round: 13,
+            results: {
+              ALPHA: { seatsAllocated: 3, votes: 2100 },
+              BETA: { seatsAllocated: 2, votes: 1800 },
+              GAMMA: { seatsAllocated: 4, votes: 2820 },
+              DELTA: { seatsAllocated: 2, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 700,
+              BETA: 600,
+              GAMMA: 564,
+              DELTA: 693.3333333333334,
+            },
+            outcome: [
+              {
+                candidate: 'ALPHA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 13,
+              },
+            ],
+          },
+          {
+            round: 14,
+            results: {
+              ALPHA: { seatsAllocated: 3, votes: 2100 },
+              BETA: { seatsAllocated: 2, votes: 1800 },
+              GAMMA: { seatsAllocated: 4, votes: 2820 },
+              DELTA: { seatsAllocated: 3, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 525,
+              BETA: 600,
+              GAMMA: 564,
+              DELTA: 693.3333333333334,
+            },
+            outcome: [
+              {
+                candidate: 'DELTA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 12,
+              },
+            ],
+          },
+          {
+            round: 15,
+            results: {
+              ALPHA: { seatsAllocated: 3, votes: 2100 },
+              BETA: { seatsAllocated: 3, votes: 1800 },
+              GAMMA: { seatsAllocated: 4, votes: 2820 },
+              DELTA: { seatsAllocated: 3, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 525,
+              BETA: 600,
+              GAMMA: 564,
+              DELTA: 520,
+            },
+            outcome: [
+              {
+                candidate: 'BETA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 11,
+              },
+            ],
+          },
+          {
+            round: 16,
+            results: {
+              ALPHA: { seatsAllocated: 3, votes: 2100 },
+              BETA: { seatsAllocated: 3, votes: 1800 },
+              GAMMA: { seatsAllocated: 5, votes: 2820 },
+              DELTA: { seatsAllocated: 3, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 525,
+              BETA: 450,
+              GAMMA: 564,
+              DELTA: 520,
+            },
+            outcome: [
+              {
+                candidate: 'GAMMA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 10,
+              },
+            ],
+          },
+          {
+            round: 17,
+            results: {
+              ALPHA: { seatsAllocated: 4, votes: 2100 },
+              BETA: { seatsAllocated: 3, votes: 1800 },
+              GAMMA: { seatsAllocated: 5, votes: 2820 },
+              DELTA: { seatsAllocated: 3, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 525,
+              BETA: 450,
+              GAMMA: 470,
+              DELTA: 520,
+            },
+            outcome: [
+              {
+                candidate: 'ALPHA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 9,
+              },
+            ],
+          },
+          {
+            round: 18,
+            results: {
+              ALPHA: { seatsAllocated: 4, votes: 2100 },
+              BETA: { seatsAllocated: 3, votes: 1800 },
+              GAMMA: { seatsAllocated: 5, votes: 2820 },
+              DELTA: { seatsAllocated: 4, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 420,
+              BETA: 450,
+              GAMMA: 470,
+              DELTA: 520,
+            },
+            outcome: [
+              {
+                candidate: 'DELTA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 8,
+              },
+            ],
+          },
+          {
+            round: 19,
+            results: {
+              ALPHA: { seatsAllocated: 4, votes: 2100 },
+              BETA: { seatsAllocated: 3, votes: 1800 },
+              GAMMA: { seatsAllocated: 6, votes: 2820 },
+              DELTA: { seatsAllocated: 4, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 420,
+              BETA: 450,
+              GAMMA: 470,
+              DELTA: 416,
+            },
+            outcome: [
+              {
+                candidate: 'GAMMA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 7,
+              },
+            ],
+          },
+          {
+            round: 20,
+            results: {
+              ALPHA: { seatsAllocated: 4, votes: 2100 },
+              BETA: { seatsAllocated: 4, votes: 1800 },
+              GAMMA: { seatsAllocated: 6, votes: 2820 },
+              DELTA: { seatsAllocated: 4, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 420,
+              BETA: 450,
+              GAMMA: 402.85714285714283,
+              DELTA: 416,
+            },
+            outcome: [
+              {
+                candidate: 'BETA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 6,
+              },
+            ],
+          },
+          {
+            round: 21,
+            results: {
+              ALPHA: { seatsAllocated: 5, votes: 2100 },
+              BETA: { seatsAllocated: 4, votes: 1800 },
+              GAMMA: { seatsAllocated: 6, votes: 2820 },
+              DELTA: { seatsAllocated: 4, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 420,
+              BETA: 360,
+              GAMMA: 402.85714285714283,
+              DELTA: 416,
+            },
+            outcome: [
+              {
+                candidate: 'ALPHA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 5,
+              },
+            ],
+          },
+          {
+            round: 22,
+            results: {
+              ALPHA: { seatsAllocated: 5, votes: 2100 },
+              BETA: { seatsAllocated: 4, votes: 1800 },
+              GAMMA: { seatsAllocated: 6, votes: 2820 },
+              DELTA: { seatsAllocated: 5, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 350,
+              BETA: 360,
+              GAMMA: 402.85714285714283,
+              DELTA: 416,
+            },
+            outcome: [
+              {
+                candidate: 'DELTA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 4,
+              },
+            ],
+          },
+          {
+            round: 23,
+            results: {
+              ALPHA: { seatsAllocated: 5, votes: 2100 },
+              BETA: { seatsAllocated: 4, votes: 1800 },
+              GAMMA: { seatsAllocated: 7, votes: 2820 },
+              DELTA: { seatsAllocated: 5, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 350,
+              BETA: 360,
+              GAMMA: 402.85714285714283,
+              DELTA: 346.6666666666667,
+            },
+            outcome: [
+              {
+                candidate: 'GAMMA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 3,
+              },
+            ],
+          },
+          {
+            round: 24,
+            results: {
+              ALPHA: { seatsAllocated: 5, votes: 2100 },
+              BETA: { seatsAllocated: 5, votes: 1800 },
+              GAMMA: { seatsAllocated: 7, votes: 2820 },
+              DELTA: { seatsAllocated: 5, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 350,
+              BETA: 360,
+              GAMMA: 352.5,
+              DELTA: 346.6666666666667,
+            },
+            outcome: [
+              {
+                candidate: 'BETA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 2,
+              },
+            ],
+          },
+          {
+            round: 25,
+            results: {
+              ALPHA: { seatsAllocated: 5, votes: 2100 },
+              BETA: { seatsAllocated: 5, votes: 1800 },
+              GAMMA: { seatsAllocated: 8, votes: 2820 },
+              DELTA: { seatsAllocated: 5, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 350,
+              BETA: 300,
+              GAMMA: 352.5,
+              DELTA: 346.6666666666667,
+            },
+            outcome: [
+              {
+                candidate: 'GAMMA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 1,
+              },
+            ],
+          },
+          {
+            round: 26,
+            results: {
+              ALPHA: { seatsAllocated: 6, votes: 2100 },
+              BETA: { seatsAllocated: 5, votes: 1800 },
+              GAMMA: { seatsAllocated: 8, votes: 2820 },
+              DELTA: { seatsAllocated: 5, votes: 2080 },
+            },
+            effectiveVotesForThisRound: {
+              ALPHA: 350,
+              BETA: 300,
+              GAMMA: 313.3333333333333,
+              DELTA: 346.6666666666667,
+            },
+            outcome: [
+              {
+                candidate: 'ALPHA',
+                action: 'DELEGATE_AWARDED - CANDIDATE ASSIGNED DELEGATE',
+                remainingDelegates: 0,
               },
             ],
           },

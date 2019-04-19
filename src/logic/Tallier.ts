@@ -10,6 +10,8 @@ import {
   reduceIdenticalBallots,
 } from './tallierUtils';
 
+import cloneDeep from 'lodash/cloneDeep';
+
 export default class Tallier {
   public ballots: BallotTuple[];
   public quota: number;
@@ -84,7 +86,7 @@ export default class Tallier {
       )
     );
     const newPrefs = countCurrentPrefs(newBallots);
-    const oldPrefs = { ...this.currentPreferences };
+    const oldPrefs = cloneDeep(this.currentPreferences);
     const changes = Object.keys(newPrefs).reduce((pv: any, cv: string) => {
       pv[cv] = newPrefs[cv] - oldPrefs[cv];
       return pv;

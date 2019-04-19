@@ -5,6 +5,7 @@ import {
   findLagger,
   countValidBallots,
   calcDroopQuota,
+  countAllocations,
 } from './tallierUtils';
 import { BallotTuple } from '../types';
 
@@ -75,6 +76,17 @@ describe('/src/logic/tallierUtils.ts', () => {
   describe('countValidBallots()', () => {
     it('counts the valid ballots', () => {
       expect(countValidBallots(data.reduced)).toBe(8800);
+    });
+  });
+  describe('countAllocations', () => {
+    it('counts the total seat allocated given a Jefferson ballot', () => {
+      const alloc = countAllocations({
+        ALPHA: { seatsAllocated: 3, votes: 30000 },
+        BETA: { seatsAllocated: 2, votes: 30000 },
+        GAMMA: { seatsAllocated: 1, votes: 30000 },
+        DELTA: { seatsAllocated: 0, votes: 30000 },
+      });
+      expect(alloc).toBe(6);
     });
   });
 });

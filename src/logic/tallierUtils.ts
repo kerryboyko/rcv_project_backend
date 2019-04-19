@@ -1,4 +1,4 @@
-export type BallotTuple = [string[], number]; // votes, weight;
+import { BallotTuple, IJeffersonTally } from '../types';
 
 export const findLeader = (results: {
   [key: string]: number;
@@ -50,3 +50,9 @@ export const countCurrentPrefs = (ballots: BallotTuple[]): any => {
 
 export const calcDroopQuota = (votes: number, seats: number): number =>
   Math.floor(votes / (seats + 1)) + 1;
+
+export const countAllocations = (allo: IJeffersonTally): number =>
+  Object.values(allo).reduce(
+    (pv: number, { seatsAllocated }) => seatsAllocated + pv,
+    0
+  );

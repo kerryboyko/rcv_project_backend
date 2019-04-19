@@ -4,9 +4,10 @@ import {
   findLeader,
   reduceIdenticalBallots,
   findLagger,
-  calcDroopQuota,
+  countAllocations,
 } from './tallierUtils';
-import { BallotTuple, CandidateAction } from '../types';
+import { BallotTuple, CandidateAction, IJeffersonTally } from '../types';
+import cloneDeep from 'lodash/cloneDeep';
 // magic numbers;
 const DEM_MINIMUM_THRESH = 0.15;
 const NH_DELEGATES = 24;
@@ -15,169 +16,51 @@ export default class DemTallier {
   public ballots: BallotTuple[];
   public thresh: number = 0;
   public losers: Set<string> = new Set();
-  public winners: Set<string> = new Set();
-  public threshReports: any[] = [];
-  public threshRound: number = 0;
-  public currentPreferences: { [key: string]: number } = {};
-  public finalReports: any[] = [];
+  public reports: any[] = [];
   public round: number = 0;
-  public wastedVotes: number = 0;
-  public quota: number = 0;
-  public delegateAssignments: Map<string, number> = new Map();
-  private delegates: number = NH_DELEGATES;
+  public currentPreferences: { [key: string]: number } = {};
+  public delegateAssignments: IJeffersonTally = {};
 
-  constructor(
-    public readonly votes: string[][] // public readonly delegateAmount: number
-  ) {
+  constructor(public readonly votes: string[][]) {
     this.ballots = reduceIdenticalBallots(
       votes.map((vote: string[]): BallotTuple => [vote, 1])
     );
     const validBallots: number = countValidBallots(this.ballots);
     this.thresh = Math.floor(validBallots * DEM_MINIMUM_THRESH);
-    this.delegates = NH_DELEGATES;
   }
 
-  public threshTally = (): string[] => {
+  public tally = (): IJeffersonTally => {
+    this.ballots = reduceIdenticalBallots(this.ballots);
     this.currentPreferences = countCurrentPrefs(this.ballots);
-    this.threshRound += 1;
-    // end case;
-    if (countValidBallots(this.ballots) < this.thresh) {
-      Object.entries(this.currentPreferences).forEach(
-        ([cand, candVotes]: [string, number]) => {
-          this.eliminateLoserThresh(cand, candVotes);
-        }
-      );
-      return Array.from(this.winners.values());
-    } //
-    const [leader, leaderVotes] = findLeader(this.currentPreferences);
-    if (leaderVotes >= this.thresh) {
-      this.setWinnerThresh(leader, leaderVotes);
-      return this.threshTally();
+    const allPassedThreshold = Object.values(this.currentPreferences).every(
+      (voteAmount: number) => voteAmount > this.thresh
+    );
+    if (allPassedThreshold) {
+      // base case;
+      return this.assignDelegates(this.currentPreferences);
     }
     const [lagger, laggerVotes] = findLagger(this.currentPreferences);
-    this.eliminateLoserThresh(lagger, laggerVotes);
-    return this.threshTally();
+    this.eliminateLoser(lagger, laggerVotes);
+    return this.tally();
   };
 
-  public tally = () => {
-    this.threshTally();
-    this.resetVotesAfterThresh();
-  };
-
-  public resetVotesAfterThresh = () => {
-    const originalVoteCount = this.votes.length;
-    this.ballots = reduceIdenticalBallots(
-      this.votes.map(
-        (vote: string[]): BallotTuple => [this.winnersOnly(vote), 1]
-      )
-    );
-    const validBallotCount: number = countValidBallots(this.ballots);
-    this.wastedVotes = originalVoteCount - validBallotCount;
-    this.quota = calcDroopQuota(validBallotCount, NH_DELEGATES);
-  };
-
-  public tallyFinal = (): Map<string, number> => {
-    this.currentPreferences = countCurrentPrefs(this.ballots);
+  private eliminateLoser = (loser: string, loserVotes: number) => {
     this.round += 1;
-    // end case;
-    if (this.delegates === 0) {
-      return this.delegateAssignments;
-    }
-    const [leader, leaderVotes] = findLeader(this.currentPreferences);
-    if (Object.keys(this.currentPreferences).length === 1) {
-      this.assignDelegatesFinal(leader);
-      return this.tallyFinal();
-    }
-    if (leaderVotes >= this.quota) {
-      this.setDelegatesFinal(leader, leaderVotes);
-      return this.tallyFinal();
-    }
-    const [lagger, laggerVotes] = findLagger(this.currentPreferences);
-    this.eliminateLoserFinal(lagger, laggerVotes); // unlikely to happen since thresh is usually higher than quota;
-    return this.tallyFinal();
-  };
-
-  private assignDelegatesFinal = (leader: string) => {
-    this.delegateAssignments.set(leader, this.delegates);
-    this.finalReports.push({
-      round: this.round,
-      results: this.currentPreferences,
-      outcome: [
-        {
-          candidate: leader,
-          action: CandidateAction.assigned,
-          seats: this.delegates,
-          round: this.round,
-          votesTransferred: 0,
-        },
-      ],
-    });
-    this.delegates = 0;
-  };
-
-  private setDelegatesFinal = (winner: string, winnerVotes: number) => {
-    const seatsAssigned = Math.floor(winnerVotes / this.quota);
-    const votesTransferred = winnerVotes - this.quota * seatsAssigned;
-    const percentage = votesTransferred / winnerVotes;
-    this.delegates -= seatsAssigned;
-    this.delegateAssignments.set(winner, seatsAssigned);
-    const newBallots = reduceIdenticalBallots(
-      this.ballots.slice().map(
-        (ballot: BallotTuple): BallotTuple => {
-          const [vote, weight] = ballot;
-          const newVote = vote
-            .slice()
-            .filter((cand: string) => cand !== winner);
-          if (vote[0] === winner) {
-            const newWeight = weight * percentage;
-            return [newVote, newWeight];
-          }
-          return [newVote, weight];
-        }
-      )
+    const newBallots = this.ballots.slice().map(
+      (ballot: BallotTuple): BallotTuple => {
+        const [vote, weight] = ballot;
+        const newVote = vote.slice().filter((cand: string) => cand !== loser);
+        return [newVote, weight];
+      }
     );
     const newPrefs = countCurrentPrefs(newBallots);
-    const oldPrefs = { ...this.currentPreferences };
+    const oldPrefs = cloneDeep(this.currentPreferences);
     const changes = Object.keys(newPrefs).reduce((pv: any, cv: string) => {
       pv[cv] = newPrefs[cv] - oldPrefs[cv];
       return pv;
     }, {});
-    this.finalReports.push({
+    this.reports.push({
       round: this.round,
-      results: this.currentPreferences,
-      outcome: [
-        {
-          candidate: winner,
-          action: CandidateAction.elected,
-          seats: seatsAssigned,
-          round: this.threshRound,
-          votesTransferred,
-          changes,
-        },
-      ],
-    });
-    this.ballots = newBallots;
-  };
-
-  private eliminateLoserFinal = (loser: string, votes: number) => {
-    this.losers.add(loser);
-    const newBallots = reduceIdenticalBallots(
-      this.ballots.slice().map(
-        (ballot: BallotTuple): BallotTuple => {
-          const [vote, weight] = ballot;
-          const newVote = vote.slice().filter((cand: string) => cand !== loser);
-          return [newVote, weight];
-        }
-      )
-    );
-    const newPrefs = countCurrentPrefs(newBallots);
-    const oldPrefs = { ...this.currentPreferences };
-    const changes = Object.keys(newPrefs).reduce((pv: any, cv: string) => {
-      pv[cv] = newPrefs[cv] - oldPrefs[cv];
-      return pv;
-    }, {});
-    this.finalReports.push({
-      round: this.threshRound,
       results: this.currentPreferences,
       outcome: [
         {
@@ -185,44 +68,7 @@ export default class DemTallier {
           action: CandidateAction.eliminated,
           seats: 0,
           round: this.round,
-          votesTransferred: votes,
-          changes,
-        },
-      ],
-    });
-    this.ballots = newBallots;
-  };
-
-  private winnersOnly = (vote: string[]): string[] =>
-    vote.filter((name: string) => this.winners.has(name));
-
-  private eliminateLoserThresh = (loser: string, votes: number) => {
-    this.losers.add(loser);
-    const newBallots = reduceIdenticalBallots(
-      this.ballots.slice().map(
-        (ballot: BallotTuple): BallotTuple => {
-          const [vote, weight] = ballot;
-          const newVote = vote.slice().filter((cand: string) => cand !== loser);
-          return [newVote, weight];
-        }
-      )
-    );
-    const newPrefs = countCurrentPrefs(newBallots);
-    const oldPrefs = { ...this.currentPreferences };
-    const changes = Object.keys(newPrefs).reduce((pv: any, cv: string) => {
-      pv[cv] = newPrefs[cv] - oldPrefs[cv];
-      return pv;
-    }, {});
-    this.threshReports.push({
-      round: this.threshRound,
-      results: this.currentPreferences,
-      outcome: [
-        {
-          candidate: loser,
-          action: CandidateAction.eliminatedThresh,
-          seats: 0,
-          round: this.threshRound,
-          votesTransferred: votes,
+          votesTransferred: loserVotes,
           changes,
         },
       ],
@@ -231,48 +77,48 @@ export default class DemTallier {
     this.ballots = newBallots;
   };
 
-  private setWinnerThresh = (winner: string, votes: number) => {
-    this.winners.add(winner);
-    const votesTransferred = votes - this.thresh;
-    const percentage = votesTransferred / votes;
-
-    const newBallots = reduceIdenticalBallots(
-      this.ballots.slice().map(
-        (ballot: BallotTuple): BallotTuple => {
-          const [vote, weight] = ballot;
-
-          const newVote = vote
-            .slice()
-            .filter((cand: string) => cand !== winner);
-          if (vote[0] === winner) {
-            const newWeight = weight * percentage;
-            return [newVote, newWeight];
-          }
-          return [newVote, weight];
-        }
-      )
-    );
-    const newPrefs = countCurrentPrefs(newBallots);
-    const oldPrefs = { ...this.currentPreferences };
-    const changes = Object.keys(newPrefs).reduce((pv: any, cv: string) => {
-      pv[cv] = newPrefs[cv] - oldPrefs[cv];
-      return pv;
-    }, {});
-    this.threshReports.push({
-      round: this.threshRound,
-      results: this.currentPreferences,
-      outcome: [
-        {
-          candidate: winner,
-          action: CandidateAction.nextRound,
-          seats: 0,
-          round: this.threshRound,
-          votesTransferred,
-          changes,
-        },
-      ],
+  private convertPrefsToJefferson = (prefs: {
+    [key: string]: number;
+  }): IJeffersonTally => {
+    const jTally: IJeffersonTally = {};
+    Object.keys(prefs).forEach((candName: string) => {
+      jTally[candName] = { seatsAllocated: 0, votes: prefs[candName] };
     });
-    this.currentPreferences = newPrefs;
-    this.ballots = newBallots;
+    return jTally;
+  };
+
+  private calcEffectiveJeffersonCount = (
+    jTally: IJeffersonTally
+  ): { [key: string]: number } => {
+    const effJeff: { [key: string]: number } = {};
+    Object.keys(jTally).forEach((candName: string) => {
+      effJeff[candName] =
+        jTally[candName].votes / (jTally[candName].seatsAllocated + 1);
+    });
+    return effJeff;
+  };
+
+  private assignDelegates = (prefs: { [key: string]: number }) => {
+    this.delegateAssignments = this.convertPrefsToJefferson(prefs);
+    while (countAllocations(this.delegateAssignments) < NH_DELEGATES) {
+      this.round += 1;
+      const jCount = this.calcEffectiveJeffersonCount(this.delegateAssignments);
+      const [leader] = findLeader(jCount);
+      this.delegateAssignments[leader].seatsAllocated += 1;
+      this.reports.push({
+        round: this.round,
+        results: cloneDeep(this.delegateAssignments),
+        effectiveVotesForThisRound: jCount,
+        outcome: [
+          {
+            candidate: leader,
+            action: CandidateAction.delegateAwarded,
+            remainingDelegates:
+              NH_DELEGATES - countAllocations(this.delegateAssignments),
+          },
+        ],
+      });
+    }
+    return this.delegateAssignments;
   };
 }
